@@ -8,6 +8,7 @@ export class Enmap<DataType> {
     public name: string|undefined;
     public path: string|undefined;
     #saveLocation: string|undefined;
+    public saveToDisk: boolean|undefined;
     public encrypted: boolean;
 
     public constructor(options?: EnmapOptions) {
@@ -107,6 +108,8 @@ export class Enmap<DataType> {
         }
         if (typeof this.#DB[index].data[key] === "number") {
             this.#DB[index].data[key]++;
+        } else {
+            this.#DB[index].data++;
         }
         return this;
     }
