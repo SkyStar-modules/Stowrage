@@ -1,4 +1,4 @@
-import { AES } from "https://deno.land/x/crypto@v0.3.5/src/aes/mod.ts";
+import { AES } from "../deps.ts";
 const add = "1234567890!@#$%^";
 
 export async function save<T>(

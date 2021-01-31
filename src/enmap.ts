@@ -1,8 +1,8 @@
-import sizeof, { size } from "https://deno.land/x/sizeof@v1.0.2/mod.ts";
+import { sizeof, size } from "../deps.ts";
 
 import { DataBase, EnmapOptions } from "./typings.ts";
 import { load, save } from "./save.ts";
-import { fileExistSync } from "./fileSystem.ts";
+import { fileExistSync } from "./filesystem.ts";
 
 /**
 * Enmap class
