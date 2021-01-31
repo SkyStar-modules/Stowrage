@@ -9,3 +9,11 @@ export interface EnmapOptions {
   filePath?: string;
   name?: string;
 }
+
+export interface ChangeValueOptions {
+  key?: string
+}
+
+export interface SetValueOptions extends ChangeValueOptions {
+  exactMatch?: boolean;
+}

@@ -1,6 +1,6 @@
 import { sizeof, size } from "../deps.ts";
 
-import { DataBase, EnmapOptions } from "./typings.ts";
+import { DataBase, EnmapOptions, SetValueOptions, ChangeValueOptions } from "./typings.ts";
 import { load, save } from "./save.ts";
 import { fileExistSync } from "./filesystem.ts";
 
@@ -25,7 +25,7 @@ export class Enmap<DataType> {
       : undefined;
     if (this.name && this.saveLocation) {
       if (fileExistSync(this.saveLocation)) {
-        this.#DB = load<DataBase[]>(this.name, this.saveLocation);
+        this.#DB = load<DataBase>(this.name, this.saveLocation);
       }
     }
     return;
@@ -37,7 +37,7 @@ export class Enmap<DataType> {
   @param { DataType } data The item you want to store
   @returns { DataType } Return's the same data as you stored
   */
-  public ensure(name: string, data: DataType): DataType {
+  public async ensure(name: string, data: DataType): Promise<DataType> {
     interface key extends DataBase {
       data: DataType;
     }
@@ -48,7 +48,7 @@ export class Enmap<DataType> {
     };
 
     this.#DB.push(KEY);
-    this.saveToDisk();
+    await this.saveToDisk();
     return KEY.data;
   }
   /**
@@ -56,7 +56,7 @@ export class Enmap<DataType> {
   @param { string } name The name of the data you want
   @param { DataType } data The item you want to store
   */
-  public add(name: string, data: DataType): void {
+  public async add(name: string, data: DataType): Promise<void> {
     interface key extends DataBase {
       data: DataType;
     }
@@ -68,7 +68,7 @@ export class Enmap<DataType> {
     };
 
     this.#DB.push(KEY);
-    this.saveToDisk();
+    await this.saveToDisk();
     return;
   }
 
@@ -79,7 +79,7 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
-  public override(id: number, newName: string, data: DataType): void;
+  public async override(id: number, newName: string, data: DataType): Promise<void>;
 
   /**
   Override an entry in the enmap
@@ -88,11 +88,11 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
-  public override(searchName: string, newName: string, data: DataType): void;
+  public async override(searchName: string, newName: string, data: DataType): Promise<void>;
   // deno-fmt-ignore
-  public override(IDName: number | string, newName: string, data: DataType): void {
+  public async override(IDName: number | string, newName: string, data: DataType): Promise<void> {
     const index = (typeof IDName === "string")
-      ? this.#DB.findIndex((value) => value.name === IDName)
+      ? this.#DB.findIndex((value) => value.name === IDName.toLowerCase())
       : this.#DB.findIndex((value) => value.id === IDName);
 
     interface key extends DataBase {
@@ -105,50 +105,45 @@ export class Enmap<DataType> {
         data
       };
       this.#DB[index] = KEY;
+      await this.saveToDisk();
     } else {
       console.warn("could not find an entry with the given name or id!");
     }
-    this.saveToDisk();
     return;
   }
 
   /**
   set the value of an entry via a name or id
   @param { string } name Name of the entry to search for
-  @param { DataType } value The new value that you want to store
-  @param { string } key The key you want to change the value of
+  @param { unknown } value The new value that you want to store
+  @param { SetValueOptions } extraOptions Extra options
   */
-  public setValue(name: string, value: DataType, key: string): void;
+  public async setValue(name: string, value: unknown, extraOptions?: SetValueOptions): Promise<void>;
 
   /**
   set the value of an entry via a name or id
   @param { number } id ID of the entry to search for
-  @param { DataType } value The new value that you want to store
-  @param { string } key The key you want to change the value of
+  @param { unknown } value The new value that you want to store
+  @param { ChangeValueOptions } extraOptions Extra options
   */
-  public setValue(id: number, value: DataType, key: string): void;
+  public async setValue(id: number, value: unknown, extraOptions?: ChangeValueOptions): Promise<void>;
   // deno-fmt-ignore
-  public setValue(IDName: number | string, value: DataType, key: string): void {
+  public async setValue(IDName: number | string, value: unknown, extraOptions?: SetValueOptions): Promise<void> {
     let index = -1;
-    if (typeof IDName === "number") {
-      index = this.#DB.findIndex((value) => value.id === IDName);
-    }
-    if (typeof IDName === "string") {
-      IDName = IDName.toLowerCase();
-      index = this.#DB.findIndex((value) => value.name === IDName);
-    }
+    if (typeof IDName === "string") IDName = IDName.toLowerCase();
+    index = (typeof IDName === "number") ? this.#DB.findIndex((value) => value.id === IDName) : ((extraOptions?.exactMatch) ? this.#DB.findIndex((value) => value.name === IDName) : this.#DB.findIndex((value) => value.name.includes(IDName.toString())));
     if (index > -1) {
       if (typeof this.#DB[index].data === "object") {
-        if (key) {
-          this.#DB[index].data[key] = value;
+        if (extraOptions?.key) {
+          this.#DB[index].data[extraOptions.key] = value;
         } else {
           console.warn("key is undefined! failed changing value");
         }
       } else {
         this.#DB[index].data = value;
       }
+      await this.saveToDisk();
     }
-    this.saveToDisk();
     return;
   }
 
@@ -157,15 +152,15 @@ export class Enmap<DataType> {
   @param { string } name Name of the entry to search for
   @param { string } key The key you want to increment the value of
   */
-  public incValue(name: string, key: string): void;
+  public async incValue(name: string, key?: string): Promise<void>;
 
   /**
   Increase value by ID
   @param { number } id ID of the entry to search for
   @param { string } key The key you want to increment the value of
   */
-  public incValue(id: number, key: string): void;
-  public incValue(IDName: number | string, key: string): void {
+  public async incValue(id: number, key?: string): Promise<void>;
+  public async incValue(IDName: number | string, key?: string): Promise<void> {
     let index = -1;
     if (typeof IDName === "number") {
       index = this.#DB.findIndex((value) => value.id === IDName);
@@ -174,12 +169,12 @@ export class Enmap<DataType> {
       IDName = IDName.toLowerCase();
       index = this.#DB.findIndex((value) => value.name === IDName);
     }
-    if (typeof this.#DB[index].data[key] === "number") {
+    if (key && typeof this.#DB[index].data[key] === "number") {
       this.#DB[index].data[key]++;
     } else {
       this.#DB[index].data++;
     }
-    this.saveToDisk();
+    await this.saveToDisk();
     return;
   }
 
@@ -289,11 +284,11 @@ export class Enmap<DataType> {
   }
 
   /**
-  * Save db in memory
+  * Save DB on disk
   */
-  private saveToDisk(): void {
+  private async saveToDisk(): Promise<void> {
     if (this.name && this.saveLocation) {
-      save<DataBase>(this.name, this.saveLocation, this.#DB);
+      await save<DataBase>(this.name, this.saveLocation, this.#DB);
     }
     return;
   }
