@@ -17,7 +17,6 @@ export class Enmap<DataType> {
   #i = 0;
   public saveLocation: string | undefined;
   public name: string | undefined;
-
   /**
   @param { EnmapOptions } options all start options for enmap
   */
@@ -82,7 +81,7 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
-  public async override(id: number, newName: string, data: DataType): Promise<void>;
+  public async override(id: number, data: DataType, newName?: string): Promise<void>;
 
   /**
   Override an entry in the enmap
@@ -91,9 +90,9 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
-  public async override(searchName: string, newName: string, data: DataType): Promise<void>;
+  public async override(searchName: string, data: DataType, newName?: string): Promise<void>;
   // deno-fmt-ignore
-  public async override(IDName: number | string, newName: string, data: DataType): Promise<void> {
+  public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
     const index = (typeof IDName === "string")
       ? this.#DB.findIndex((value) => value.name === IDName.toLowerCase())
       : this.#DB.findIndex((value) => value.id === IDName);
@@ -104,7 +103,7 @@ export class Enmap<DataType> {
     if (index > -1) {
       const KEY: key = {
         id: this.#DB[index].id,
-        name: newName.toLowerCase(),
+        name: (newName) ? newName.toLowerCase() : this.#DB[index].name,
         data
       };
       this.#DB[index] = KEY;
@@ -198,14 +197,8 @@ export class Enmap<DataType> {
   // deno-fmt-ignore
   public fetch(IDName: number | string, exactMatch?: boolean): DataBase | undefined {
     let index = -1;
-    if (typeof IDName === "string") {
-      const search: string = IDName.toLowerCase();
-      index = (exactMatch)
-        ? this.#DB.findIndex((value) => value.name === search)
-        : this.#DB.findIndex((value) => value.name.includes(search));
-    } else {
-      index = this.#DB.findIndex((value) => value.id === IDName);
-    }
+    if (typeof IDName === "string") IDName = IDName.toLowerCase();
+      index = (typeof IDName === "number") ? this.#DB.findIndex((value) => value.id === IDName) : ((exactMatch) ? this.#DB.findIndex((value) => value.name === IDName) : this.#DB.findIndex((value) => value.name.includes(IDName.toString())))
     return this.#DB[index];
   }
 
@@ -213,29 +206,28 @@ export class Enmap<DataType> {
   Fetch all entries by a range of id's
   @param { number } begin The first ID to fetch
   @param { number } length Length of the list
-  @returns { DataBase[] | undefined } Returns an array with all entries found, or undefined if no entries were found
+  @returns { Promise<DataBase[] | undefined> } Returns an array with all entries found, or undefined if no entries were found
   */
-  public fetchByRange(begin: number, length: number): DataBase[] | undefined {
-    const temp: DataBase[] = this.#DB.filter((value) =>
-      value.id >= begin && value.id <= begin + length
-    );
-    if (temp.length === 0) return undefined;
-    return temp;
+  public async fetchByRange(begin: number, length: number): Promise<DataBase[] | undefined> {
+    const temp: Promise<DataBase[]> = new Promise((resolve) => resolve(this.#DB.filter((value) => value.id >= begin && value.id <= begin + length)));
+    const data: DataBase[] = await temp;
+    if (data.length === 0) return undefined;
+    return data;
   }
 
   /**
   Delete entry by ID
   @param { number } id ID of the entry you want to fetch
   */
-  public delete(id: number): void;
+  public async delete(id: number): Promise<void>;
 
   /**
   Delete entry by name
   @param { string } name Name of the entry you want to fetch
   @param { boolean } exactMatch optional: allow the search to be an exact match
   */
-  public delete(name: string): this;
-  public delete(IDName: number | string, exactMatch?: boolean): this {
+  public async delete(name: string): Promise<void>;
+  public async delete(IDName: number | string, exactMatch?: boolean): Promise<void> {
     let index = -1;
     if (typeof IDName === "string") {
       index = (exactMatch)
@@ -246,9 +238,9 @@ export class Enmap<DataType> {
     }
     if (index > -1) {
       this.#DB.splice(index, 1);
-      this.saveToDisk();
+      await this.saveToDisk();
     }
-    return this;
+    return;
   }
 
   /**
@@ -256,33 +248,32 @@ export class Enmap<DataType> {
   @param { number } begin The first ID to fetch
   @param { number } length Length of the list
   */
-  public deleteByRange(begin: number, length: number): void {
+  public async deleteByRange(begin: number, length: number): Promise<void> {
     this.#DB.splice(begin, length);
-    this.saveToDisk();
+    await this.saveToDisk();
     return;
   }
 
   /**
   Delete every entry in the enmap and remove it from disk
   */
-  public deleteEnmap(): void {
+  public async deleteEnmap(): Promise<void> {
     this.#DB = [];
-    if (this.saveLocation) Deno.removeSync(this.saveLocation);
+    if (this.saveLocation) await Deno.remove(this.saveLocation);
     return;
   }
 
   /**
   * Get the size of the Enmap
   */
-  public getEnmapSize(): size {
-    const size: size = sizeof(this.#DB);
-    return size;
+  public EnmapSize(): size {
+    return sizeof(this.#DB);
   }
 
   /**
   * Get total entries in the Enmap 
   */
-  public getTotalEntries(): number {
+  public TotalEntries(): number {
     return this.#DB.length;
   }
 
