@@ -1,7 +1,10 @@
+// Import sizeof module from deps
 import { sizeof, size } from "../deps.ts";
-
+// Import types from local typings.ts
 import { DataBase, EnmapOptions, SetValueOptions, ChangeValueOptions } from "./typings.ts";
+// Import load and save features
 import { load, save } from "./save.ts";
+// Import filesystem features
 import { fileExistSync } from "./filesystem.ts";
 
 /**
@@ -284,7 +287,7 @@ export class Enmap<DataType> {
   }
 
   /**
-  * Save DB on disk
+  * Save #DB on disk
   */
   private async saveToDisk(): Promise<void> {
     if (this.name && this.saveLocation) {
