@@ -1,5 +1,6 @@
 // Import sizeof module from deps
 import { size, sizeof } from "../deps.ts";
+
 // Import types from local typings.ts
 import {
   ChangeValueOptions,
@@ -7,8 +8,10 @@ import {
   EnmapOptions,
   SetValueOptions,
 } from "./typings.ts";
+
 // Import load and save features
 import { load, save } from "./save.ts";
+
 // Import filesystem features
 import { fileExistSync } from "./filesystem.ts";
 
@@ -91,11 +94,8 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
-  public async override(
-    id: number,
-    data: DataType,
-    newName?: string,
-  ): Promise<void>;
+  // deno-fmt-ignore
+  public async override(id: number, data: DataType, newName?: string): Promise<void>;
 
   /**
   Override an entry in the enmap
@@ -104,11 +104,8 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
-  public async override(
-    searchName: string,
-    data: DataType,
-    newName?: string,
-  ): Promise<void>;
+  // deno-fmt-ignore
+  public async override(searchName: string, data: DataType, newName?: string): Promise<void>;
   // deno-fmt-ignore
   public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
     const index = (typeof IDName === "string")
@@ -138,11 +135,8 @@ export class Enmap<DataType> {
   @param { unknown } value The new value that you want to store
   @param { SetValueOptions } extraOptions Extra options
   */
-  public async setValue(
-    name: string,
-    value: unknown,
-    extraOptions?: SetValueOptions,
-  ): Promise<void>;
+  // deno-fmt-ignore
+  public async setValue(name: string, value: unknown, extraOptions?: SetValueOptions): Promise<void>;
 
   /**
   set the value of an entry via a name or id
@@ -150,11 +144,8 @@ export class Enmap<DataType> {
   @param { unknown } value The new value that you want to store
   @param { ChangeValueOptions } extraOptions Extra options
   */
-  public async setValue(
-    id: number,
-    value: unknown,
-    extraOptions?: ChangeValueOptions,
-  ): Promise<void>;
+  // deno-fmt-ignore
+  public async setValue(id: number, value: unknown, extraOptions?: ChangeValueOptions): Promise<void>;
   // deno-fmt-ignore
   public async setValue(IDName: number | string, value: unknown, extraOptions?: SetValueOptions): Promise<void> {
     let index = -1;
@@ -221,10 +212,8 @@ export class Enmap<DataType> {
   @param { boolean } exactMatch optional: allow the search to be an exact match
   @returns { DataBase | undefined } return's the entry or undefined if not found
   */
-  public async fetch(
-    name: string,
-    exactMatch?: boolean,
-  ): Promise<DataBase | undefined>;
+  // deno-fmt-ignore
+  public async fetch(name: string, exactMatch?: boolean): Promise<DataBase | undefined>;
   // deno-fmt-ignore
   public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase | undefined> {
     let index = -1;
@@ -241,10 +230,8 @@ export class Enmap<DataType> {
   @param { number } length Length of the list
   @returns { Promise<DataBase[] | undefined> } Returns an array with all entries found, or undefined if no entries were found
   */
-  public async fetchByRange(
-    begin: number,
-    length: number,
-  ): Promise<DataBase[] | undefined> {
+  // deno-fmt-ignore
+  public async fetchByRange(begin: number, length: number): Promise<DataBase[] | undefined> {
     const data: DataBase[] = await new Promise<DataBase[]>((resolve) =>
       resolve(
         this.#DB.filter((value) =>
@@ -269,10 +256,8 @@ export class Enmap<DataType> {
   @param { boolean } exactMatch optional: allow the search to be an exact match
   */
   public async delete(name: string): Promise<void>;
-  public async delete(
-    IDName: number | string,
-    exactMatch?: boolean,
-  ): Promise<void> {
+  // deno-fmt-ignore
+  public async delete(IDName: number | string, exactMatch?: boolean): Promise<void> {
     let index = -1;
     if (typeof IDName === "string") {
       index = (exactMatch)
