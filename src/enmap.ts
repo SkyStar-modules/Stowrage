@@ -60,6 +60,8 @@ export class Enmap<DataType> {
     await this.saveToDisk();
     return KEY.data;
   }
+
+  public push = this.add;
   /**
   * Add an entry to the enmap
   @param { string } name The name of the data you want
@@ -81,6 +83,7 @@ export class Enmap<DataType> {
     return;
   }
 
+  public overrideEntry = this.override;
   /**
   * Override an entry in the enmap
   * NOTE: the override will keep the id
@@ -203,6 +206,8 @@ export class Enmap<DataType> {
     return;
   }
 
+  public fetchEntry = this.fetch;
+  public get = this.fetch;
   /**
   Fetch entry by ID
   @param { number } id ID of the entry you want to fetch
@@ -228,6 +233,8 @@ export class Enmap<DataType> {
     return this.#DB[index];
   }
 
+  public getEntriesByRange = this.fetchByRange;
+  public getByRange = this.fetchByRange;
   /**
   Fetch all entries by a range of id's
   @param { number } begin The first ID to fetch
@@ -249,6 +256,7 @@ export class Enmap<DataType> {
     return data;
   }
 
+  public deleteEntry = this.delete;
   /**
   Delete entry by ID
   @param { number } id ID of the entry you want to fetch
@@ -280,6 +288,7 @@ export class Enmap<DataType> {
     return;
   }
 
+  public deleteEntriesByRange = this.deleteByRange;
   /**
   Delete entries in a specific range
   @param { number } begin The first ID to fetch
@@ -300,13 +309,15 @@ export class Enmap<DataType> {
     return;
   }
 
+  public getEnmapSize = this.enmapSize;
   /**
   * Get the size of the Enmap
   */
-  public EnmapSize(): size {
+  public enmapSize(): size {
     return sizeof(this.#DB);
   }
 
+  public getTotalEntries = this.TotalEntries;
   /**
   * Get total entries in the Enmap 
   */
