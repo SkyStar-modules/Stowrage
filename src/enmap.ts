@@ -15,13 +15,15 @@ import { fileExistSync } from "./filesystem.ts";
 export class Enmap<DataType> {
   #DB: DataBase[] = [];
   #i = 0;
+  public maxEntries: number | undefined;
   public saveLocation: string | undefined;
   public name: string | undefined;
   /**
   @param { EnmapOptions } options all start options for enmap
   */
   public constructor(options?: EnmapOptions) {
-    this.name = (options?.name) ? options.name : undefined;
+    this.maxEntries = options?.maxEntries;
+    this.name = options?.name;
     this.saveLocation = (options?.filePath && this.name)
       ? options.filePath + "/" + this.name + ".enmap"
       : undefined;
@@ -185,7 +187,7 @@ export class Enmap<DataType> {
   @param { number } id ID of the entry you want to fetch
   @returns { DataBase | undefined } return's the entry or undefined if not found
   */
-  public fetch(id: number): DataBase | undefined;
+  public async fetch(id: number): Promise<DataBase | undefined>;
 
   /**
   Fetch entry by name
@@ -193,12 +195,12 @@ export class Enmap<DataType> {
   @param { boolean } exactMatch optional: allow the search to be an exact match
   @returns { DataBase | undefined } return's the entry or undefined if not found
   */
-  public fetch(name: string, exactMatch?: boolean): DataBase | undefined;
+  public async fetch(name: string, exactMatch?: boolean): Promise<DataBase | undefined>;
   // deno-fmt-ignore
-  public fetch(IDName: number | string, exactMatch?: boolean): DataBase | undefined {
+  public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase | undefined> {
     let index = -1;
     if (typeof IDName === "string") IDName = IDName.toLowerCase();
-      index = (typeof IDName === "number") ? this.#DB.findIndex((value) => value.id === IDName) : ((exactMatch) ? this.#DB.findIndex((value) => value.name === IDName) : this.#DB.findIndex((value) => value.name.includes(IDName.toString())))
+      index = await new Promise<number>((resolve) => resolve(this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString()))));
     return this.#DB[index];
   }
 
@@ -209,8 +211,7 @@ export class Enmap<DataType> {
   @returns { Promise<DataBase[] | undefined> } Returns an array with all entries found, or undefined if no entries were found
   */
   public async fetchByRange(begin: number, length: number): Promise<DataBase[] | undefined> {
-    const temp: Promise<DataBase[]> = new Promise((resolve) => resolve(this.#DB.filter((value) => value.id >= begin && value.id <= begin + length)));
-    const data: DataBase[] = await temp;
+    const data: DataBase[] = await new Promise<DataBase[]>((resolve) => resolve(this.#DB.filter((value) => value.id >= begin && value.id <= (begin + length))));
     if (data.length === 0) return undefined;
     return data;
   }
@@ -281,6 +282,9 @@ export class Enmap<DataType> {
   * Save #DB on disk
   */
   private async saveToDisk(): Promise<void> {
+    if (this.maxEntries && this.TotalEntries() > this.maxEntries) {
+      this.#DB.splice(0, 1);
+    }
     if (this.name && this.saveLocation) {
       await save<DataBase>(this.name, this.saveLocation, this.#DB);
     }

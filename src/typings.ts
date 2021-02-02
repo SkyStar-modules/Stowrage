@@ -8,6 +8,7 @@ export interface DataBase {
 export interface EnmapOptions {
   filePath?: string;
   name?: string;
+  maxEntries?: number;
 }
 
 export interface ChangeValueOptions {
