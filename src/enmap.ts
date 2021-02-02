@@ -26,6 +26,7 @@ export class Enmap<DataType> {
   public maxEntries: number | undefined;
   public saveLocation: string | undefined;
   public name: string | undefined;
+
   /**
   @param { EnmapOptions } options all start options for enmap
   */
@@ -64,7 +65,6 @@ export class Enmap<DataType> {
     return KEY.data;
   }
 
-  public push = this.add;
   /**
   * Add an entry to the enmap
   @param { string } name The name of the data you want
@@ -86,7 +86,6 @@ export class Enmap<DataType> {
     return;
   }
 
-  public overrideEntry = this.override;
   /**
   * Override an entry in the enmap
   * NOTE: the override will keep the id
@@ -94,6 +93,7 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
+
   // deno-fmt-ignore
   public async override(id: number, data: DataType, newName?: string): Promise<void>;
 
@@ -104,8 +104,10 @@ export class Enmap<DataType> {
   @param { string } newName The new name for the entry
   @param { DataType } data The item you want to store
   */
+
   // deno-fmt-ignore
   public async override(searchName: string, data: DataType, newName?: string): Promise<void>;
+
   // deno-fmt-ignore
   public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
     const index = (typeof IDName === "string")
@@ -144,8 +146,10 @@ export class Enmap<DataType> {
   @param { unknown } value The new value that you want to store
   @param { ChangeValueOptions } extraOptions Extra options
   */
+
   // deno-fmt-ignore
   public async setValue(id: number, value: unknown, extraOptions?: ChangeValueOptions): Promise<void>;
+
   // deno-fmt-ignore
   public async setValue(IDName: number | string, value: unknown, extraOptions?: SetValueOptions): Promise<void> {
     let index = -1;
@@ -212,8 +216,10 @@ export class Enmap<DataType> {
   @param { boolean } exactMatch optional: allow the search to be an exact match
   @returns { DataBase | undefined } return's the entry or undefined if not found
   */
+
   // deno-fmt-ignore
   public async fetch(name: string, exactMatch?: boolean): Promise<DataBase | undefined>;
+
   // deno-fmt-ignore
   public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase | undefined> {
     let index = -1;
@@ -230,6 +236,7 @@ export class Enmap<DataType> {
   @param { number } length Length of the list
   @returns { Promise<DataBase[] | undefined> } Returns an array with all entries found, or undefined if no entries were found
   */
+
   // deno-fmt-ignore
   public async fetchByRange(begin: number, length: number): Promise<DataBase[] | undefined> {
     const data: DataBase[] = await new Promise<DataBase[]>((resolve) =>
@@ -243,7 +250,6 @@ export class Enmap<DataType> {
     return data;
   }
 
-  public deleteEntry = this.delete;
   /**
   Delete entry by ID
   @param { number } id ID of the entry you want to fetch
@@ -256,6 +262,7 @@ export class Enmap<DataType> {
   @param { boolean } exactMatch optional: allow the search to be an exact match
   */
   public async delete(name: string): Promise<void>;
+
   // deno-fmt-ignore
   public async delete(IDName: number | string, exactMatch?: boolean): Promise<void> {
     let index = -1;
@@ -272,8 +279,6 @@ export class Enmap<DataType> {
     }
     return;
   }
-
-  public deleteEntriesByRange = this.deleteByRange;
   /**
   Delete entries in a specific range
   @param { number } begin The first ID to fetch
@@ -294,7 +299,6 @@ export class Enmap<DataType> {
     return;
   }
 
-  public getEnmapSize = this.enmapSize;
   /**
   * Get the size of the Enmap
   */
@@ -302,7 +306,6 @@ export class Enmap<DataType> {
     return sizeof(this.#DB);
   }
 
-  public getTotalEntries = this.TotalEntries;
   /**
   * Get total entries in the Enmap 
   */
