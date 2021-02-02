@@ -12,7 +12,7 @@ export interface EnmapOptions {
 }
 
 export interface ChangeValueOptions {
-  key?: string
+  key?: string;
 }
 
 export interface SetValueOptions extends ChangeValueOptions {
