@@ -6,7 +6,7 @@ export interface DataBase {
 }
 
 export interface EnmapOptions {
-  filePath?: string;
+  saveToDisk?: boolean;
   name?: string;
   maxEntries?: number;
 }

@@ -1,6 +1,9 @@
 // Import sizeof module from deps
 import { size, sizeof } from "../deps.ts";
 
+
+import { NameDuplicationError } from "./error.ts";
+
 // Import types from local typings.ts
 import {
   ChangeValueOptions,
@@ -22,23 +25,23 @@ import { fileExistSync } from "./filesystem.ts";
 */
 export class Enmap<DataType> {
   #DB: DataBase[] = [];
-  #i = 0;
+  #id = 0;
   public maxEntries: number | undefined;
   public saveLocation: string | undefined;
   public name: string | undefined;
-
+  
   /**
   @param { EnmapOptions } options all start options for enmap
   */
   public constructor(options?: EnmapOptions) {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
-    this.saveLocation = (options?.filePath && this.name)
-      ? options.filePath + "/" + this.name + ".enmap"
-      : undefined;
+    this.saveLocation = (options?.saveToDisk && this.name) ? "./enmaps/" + this.name + ".enmap" : undefined;
     if (this.name && this.saveLocation) {
+      if (!fileExistSync("./enmaps")) Deno.mkdirSync("./enmaps")
       if (fileExistSync(this.saveLocation)) {
         this.#DB = load<DataBase>(this.name, this.saveLocation);
+        this.#id = this.TotalEntries();
       }
     }
     return;
@@ -50,12 +53,15 @@ export class Enmap<DataType> {
   @param { DataType } data The item you want to store
   @returns { DataType } Return's the same data as you stored
   */
-  public async ensure(name: string, data: DataType): Promise<DataBase> {
+  public async ensure(name: string, data: DataType): Promise<DataBase | void> {
     interface key extends DataBase {
       data: DataType;
     }
+    for (let i = 0; i < this.#DB.length; i++) {
+      if (name === this.#DB[i].name) throw new NameDuplicationError(name);
+    }
     const KEY: key = {
-      id: this.#i++,
+      id: this.#id++,
       name: name.toLowerCase(),
       data,
     };
@@ -74,9 +80,14 @@ export class Enmap<DataType> {
     interface key extends DataBase {
       data: DataType;
     }
-
+    await this.#DB.forEach(x => {
+      if (x.name === name) {
+        console.warn("name is already used for an entry!");
+        return;
+      }
+    });
     const KEY: key = {
-      id: this.#i++,
+      id: this.#id++,
       name: name.toLowerCase(),
       data,
     };
@@ -292,7 +303,7 @@ export class Enmap<DataType> {
   */
   public async deleteEnmap(): Promise<void> {
     this.#DB = [];
-    this.#i = 0;
+    this.#id = 0;
     if (this.saveLocation) await Deno.remove(this.saveLocation);
     return;
   }
