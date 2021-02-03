@@ -50,7 +50,7 @@ export class Enmap<DataType> {
   @param { DataType } data The item you want to store
   @returns { DataType } Return's the same data as you stored
   */
-  public async ensure(name: string, data: DataType): Promise<DataType> {
+  public async ensure(name: string, data: DataType): Promise<DataBase> {
     interface key extends DataBase {
       data: DataType;
     }
@@ -62,7 +62,7 @@ export class Enmap<DataType> {
 
     this.#DB.push(KEY);
     await this.saveToDisk();
-    return KEY.data;
+    return KEY;
   }
 
   /**
@@ -137,6 +137,7 @@ export class Enmap<DataType> {
   @param { unknown } value The new value that you want to store
   @param { SetValueOptions } extraOptions Extra options
   */
+
   // deno-fmt-ignore
   public async setValue(name: string, value: unknown, extraOptions?: SetValueOptions): Promise<void>;
 
@@ -201,8 +202,6 @@ export class Enmap<DataType> {
     return;
   }
 
-  public fetchEntry = this.fetch;
-  public get = this.fetch;
   /**
   Fetch entry by ID
   @param { number } id ID of the entry you want to fetch
@@ -228,8 +227,6 @@ export class Enmap<DataType> {
     return this.#DB[index];
   }
 
-  public getEntriesByRange = this.fetchByRange;
-  public getByRange = this.fetchByRange;
   /**
   Fetch all entries by a range of id's
   @param { number } begin The first ID to fetch
@@ -295,6 +292,7 @@ export class Enmap<DataType> {
   */
   public async deleteEnmap(): Promise<void> {
     this.#DB = [];
+    this.#i = 0;
     if (this.saveLocation) await Deno.remove(this.saveLocation);
     return;
   }
