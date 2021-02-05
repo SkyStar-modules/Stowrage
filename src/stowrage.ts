@@ -1,15 +1,14 @@
 // Import sizeof module from deps
 import { size, sizeof } from "../deps.ts";
 
-
 import { NameDuplicationError } from "./error.ts";
 
 // Import types from local typings.ts
 import {
   ChangeValueOptions,
   DataBase,
-  EnmapOptions,
   SetValueOptions,
+  StowrageOptions,
 } from "./typings.ts";
 
 // Import load and save features
@@ -19,26 +18,28 @@ import { load, save } from "./save.ts";
 import { fileExistSync } from "./filesystem.ts";
 
 /**
-* Enmap class
+* stowrage class
 @property { string | undefined } saveLocation path where persistent data will be stored
-@property { string | undefined } name name of the .enmap file
+@property { string | undefined } name name of the .stowrage file
 */
-export class Enmap<DataType> {
+export class Stowrage<DataType> {
   #DB: DataBase[] = [];
   #id = 0;
   public maxEntries: number | undefined;
   public saveLocation: string | undefined;
   public name: string | undefined;
-  
+
   /**
-  @param { EnmapOptions } options all start options for enmap
+  @param { StowrageOptions } options all start options for stowrage
   */
-  public constructor(options?: EnmapOptions) {
+  public constructor(options?: StowrageOptions) {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
-    this.saveLocation = (options?.saveToDisk && this.name) ? "./enmaps/" + this.name + ".enmap" : undefined;
+    this.saveLocation = (options?.saveToDisk && this.name)
+      ? "./stowrage/" + this.name + ".stow"
+      : undefined;
     if (this.name && this.saveLocation) {
-      if (!fileExistSync("./enmaps")) Deno.mkdirSync("./enmaps")
+      if (!fileExistSync("./stowrage")) Deno.mkdirSync("./stowrage");
       if (fileExistSync(this.saveLocation)) {
         this.#DB = load<DataBase>(this.name, this.saveLocation);
         this.#id = this.TotalEntries();
@@ -48,7 +49,7 @@ export class Enmap<DataType> {
   }
 
   /**
-  * Add an entry to enmap and return it
+  * Add an entry to stowrage and return it
   @param { string } name The name of the data you want
   @param { DataType } data The item you want to store
   @returns { DataType } Return's the same data as you stored
@@ -57,7 +58,8 @@ export class Enmap<DataType> {
     interface key extends DataBase {
       data: DataType;
     }
-    for (let i = 0; i < this.#DB.length; i++) {
+    const DBSIZE = this.#DB.length;
+    for (let i = 0; i < DBSIZE; i++) {
       if (name === this.#DB[i].name) throw new NameDuplicationError(name);
     }
     const KEY: key = {
@@ -72,7 +74,7 @@ export class Enmap<DataType> {
   }
 
   /**
-  * Add an entry to the enmap
+  * Add an entry to the stowrage
   @param { string } name The name of the data you want
   @param { DataType } data The item you want to store
   */
@@ -80,12 +82,10 @@ export class Enmap<DataType> {
     interface key extends DataBase {
       data: DataType;
     }
-    await this.#DB.forEach(x => {
-      if (x.name === name) {
-        console.warn("name is already used for an entry!");
-        return;
-      }
-    });
+    const DBSIZE = this.#DB.length;
+    for (let i = 0; i < DBSIZE; i++) {
+      if (name === this.#DB[i].name) throw new NameDuplicationError(name);
+    }
     const KEY: key = {
       id: this.#id++,
       name: name.toLowerCase(),
@@ -98,7 +98,7 @@ export class Enmap<DataType> {
   }
 
   /**
-  * Override an entry in the enmap
+  * Override an entry in the stowrage
   * NOTE: the override will keep the id
   @param { number } id The id of the entry to override
   @param { string } newName The new name for the entry
@@ -109,7 +109,7 @@ export class Enmap<DataType> {
   public async override(id: number, data: DataType, newName?: string): Promise<void>;
 
   /**
-  Override an entry in the enmap
+  Override an entry in the stowrage
   NOTE: the override will keep the id
   @param { string } searchName The name of the entry to override
   @param { string } newName The new name for the entry
@@ -299,9 +299,9 @@ export class Enmap<DataType> {
   }
 
   /**
-  Delete every entry in the enmap and remove it from disk
+  Delete every entry in the stowrage and remove it from disk
   */
-  public async deleteEnmap(): Promise<void> {
+  public async deletestowrage(): Promise<void> {
     this.#DB = [];
     this.#id = 0;
     if (this.saveLocation) await Deno.remove(this.saveLocation);
@@ -309,14 +309,14 @@ export class Enmap<DataType> {
   }
 
   /**
-  * Get the size of the Enmap
+  * Get the size of the stowrage
   */
-  public enmapSize(): size {
+  public stowrageSize(): size {
     return sizeof(this.#DB);
   }
 
   /**
-  * Get total entries in the Enmap 
+  * Get total entries in the stowrage 
   */
   public TotalEntries(): number {
     return this.#DB.length;

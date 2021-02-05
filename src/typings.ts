@@ -5,7 +5,7 @@ export interface DataBase {
   data: any;
 }
 
-export interface EnmapOptions {
+export interface StowrageOptions {
   saveToDisk?: boolean;
   name?: string;
   maxEntries?: number;

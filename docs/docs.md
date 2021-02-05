@@ -1,39 +1,39 @@
 # Documentation
 
-## Create a new enmap
+## Create a new Stowrage
 
 ### Basic
 
-the most basic example of creating an Enmap
+the most basic example of creating an Stowrage
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap();
+const data = new Stowrage();
 ```
 
-### typesafe Enmap
+### typesafe Stowrage
 
-A typesafe Enmap only allow's user listed types to be used  
+A typesafe Stowrage only allow's user listed types to be used  
 The example shown below only allow's string's to be used
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 ```
 
-### Enmap Options
+### Stowrage Options
 
-Enmap allow's for a few options to be used which are all optional
+Stowrage allow's for a few options to be used which are all optional
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap({
-    name: "some name", // name of the enmap
-    filePath: ".", // optionally you can save the enmap by having both filePath and name selected
-    maxEntries: 5 // max entries allowed in the enmap, automatically discard the oldest entry
+const data = new Stowrage({
+    name: "some name", // name of the Stowrage
+    filePath: ".", // optionally you can save the Stowrage by having both filePath and name selected
+    maxEntries: 5 // max entries allowed in the Stowrage, automatically discard the oldest entry
 });
 ```
 
@@ -58,9 +58,9 @@ interface DataBase {
 Ensure allow's the user to add data and immediately return it
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 console.log(await data.ensure("name", "string"));
 /** expected output:
 {
@@ -76,9 +76,9 @@ console.log(await data.ensure("name", "string"));
 Add is the same as ensure, but it does not return the data
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 data.add("name", "string");
 ```
 
@@ -87,9 +87,9 @@ data.add("name", "string");
 get 1 entry by id or name
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 data.add("somename", "string");
 
 console.log(await fetch("somename"));
@@ -108,9 +108,9 @@ console.log(await fetch(0));
 fetch all entries from a range
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 data.add("somename", "string");
 data.add("somename1", "string");
 
@@ -136,9 +136,9 @@ console.log(await fetchByRange(0, 2));
 override an entry by searching for it's name or id
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 
 data.add("name", "string"));
 
@@ -158,9 +158,9 @@ console.log(await data.fetch("newname"));
 set a value of an entry(or key of the entry)
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 
 data.add("name", "string");
 
@@ -168,9 +168,9 @@ data.setValue("name", "newValue");
 ```
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<Record<string, string>>();
+const data = new Stowrage<Record<string, string>>();
 
 const obj = {
     thing: "value"
@@ -205,9 +205,9 @@ console.log(await data.fetch("name"));
 this has the same idea as setValue but it only increments a number
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<Record<string, number>>();
+const data = new Stowrage<Record<string, number>>();
 const obj = {
     thing: 12
 }
@@ -230,9 +230,9 @@ console.log(await data.fetch("name"));
 or for just numbers
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<number>();
+const data = new Stowrage<number>();
 
 console.log(await data.ensure("name", 17);
 /** expected output:
@@ -258,9 +258,9 @@ console.log(await data.fetch("name"));
 Delete 1 entry from the map via a name or id
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 
 data.ensure("name", "string");
 
@@ -274,42 +274,42 @@ data.delete("name");
 Same as fetchByRange but it deletes the entries instead of fetching them
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 data.add("somename", "string");
 data.add("somename1", "string");
 
 data.deleteByRange(0, 1);
 ```
 
-### deleteEnmap()
+### deleteStowrage()
 
-delete everything in the enmap
+delete everything in the Stowrage
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 data.add("somename", "string");
 data.add("somename1", "string");
 
-data.deleteEnmap();
-// enmap is now cleared
+data.deleteStowrage();
+// Stowrage is now cleared
 ```
 
-### enmapSize()
+### stowrageSize()
 
-Get the size of the Enmap
+Get the size of the Stowrage
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 data.add("somename", "string");
 data.add("somename1", "string");
 
-console.log(data.enmapSize());
+console.log(data.stowrageSize());
 ```
 
 ### totalEntries()
@@ -317,9 +317,9 @@ console.log(data.enmapSize());
 gives the amount of total entries
 
 ```ts
-import { Enmap } from "https://deno.land/x/enmap@v1.0.0/mod.ts";
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
-const data = new Enmap<string>();
+const data = new Stowrage<string>();
 data.add("somename", "string");
 data.add("somename1", "string");
 
