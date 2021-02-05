@@ -31,9 +31,9 @@ Stowrage allow's for a few options to be used which are all optional
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage({
-    name: "some name", // name of the Stowrage
-    filePath: ".", // optionally you can save the Stowrage by having both filePath and name selected
-    maxEntries: 5 // max entries allowed in the Stowrage, automatically discard the oldest entry
+  name: "some name", // name of the Stowrage
+  filePath: ".", // optionally you can save the Stowrage by having both filePath and name selected
+  maxEntries: 5, // max entries allowed in the Stowrage, automatically discard the oldest entry
 });
 ```
 
@@ -43,9 +43,9 @@ const data = new Stowrage({
 
 ```ts
 interface DataBase {
-    id: number;
-    name: string;
-    data: userDefined;
+  id: number;
+  name: string;
+  data: userDefined;
 }
 ```
 
@@ -173,8 +173,8 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 const data = new Stowrage<Record<string, string>>();
 
 const obj = {
-    thing: "value"
-}
+  thing: "value",
+};
 
 console.log(await data.ensure("name", obj));
 /** expected output:
@@ -187,7 +187,7 @@ console.log(await data.ensure("name", obj));
 }
 */
 
-data.setValue("name", "new value", {key: "thing"});
+data.setValue("name", "new value", { key: "thing" });
 console.log(await data.fetch("name"));
 /** expected output:
 {
@@ -209,8 +209,8 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<Record<string, number>>();
 const obj = {
-    thing: 12
-}
+  thing: 12,
+};
 console.log(await data.ensure("name", obj));
 /** expected output: 
 {
