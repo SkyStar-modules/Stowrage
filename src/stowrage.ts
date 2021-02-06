@@ -1,7 +1,12 @@
 // Import sizeof module from deps
 import { size, sizeof } from "../deps.ts";
 
-import { NameDuplicationError, IDNotFoundError, InternalIDDuplicationError, NameNotFoundError } from "./error.ts";
+import {
+  IDNotFoundError,
+  InternalIDDuplicationError,
+  NameDuplicationError,
+  NameNotFoundError,
+} from "./error.ts";
 
 // Import types from local typings.ts
 import {
@@ -200,7 +205,9 @@ export class Stowrage<DataType> {
   public async incValue(IDName: number | string, key?: string): Promise<void> {
     let index = -1;
     if (typeof IDName === "string") IDName = IDName.toLowerCase();
-    index = this.#DB.findIndex((value) => value.id === IDName || value.name === IDName);
+    index = this.#DB.findIndex((value) =>
+      value.id === IDName || value.name === IDName
+    );
     if (key && typeof this.#DB[index].data[key] === "number") {
       this.#DB[index].data[key]++;
     } else {
