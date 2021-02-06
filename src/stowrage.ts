@@ -1,7 +1,7 @@
 // Import sizeof module from deps
 import { size, sizeof } from "../deps.ts";
 
-import { NameDuplicationError } from "./error.ts";
+import { NameDuplicationError, IDNotFoundError, InternalIDDuplicationError, NameNotFoundError } from "./error.ts";
 
 // Import types from local typings.ts
 import {
@@ -121,9 +121,7 @@ export class Stowrage<DataType> {
 
   // deno-fmt-ignore
   public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
-    const index = (typeof IDName === "string")
-      ? this.#DB.findIndex((value) => value.name === IDName.toLowerCase())
-      : this.#DB.findIndex((value) => value.id === IDName);
+    const index = this.#DB.findIndex((value) => value.name === IDName.toString().toLowerCase() || value.id === IDName)
 
     interface key extends DataBase {
       data: DataType;
@@ -137,7 +135,8 @@ export class Stowrage<DataType> {
       this.#DB[index] = KEY;
       await this.saveToDisk();
     } else {
-      console.warn("could not find an entry with the given name or id!");
+      if (typeof IDName === "string") throw new NameNotFoundError(IDName);
+      if (typeof IDName === "number") throw new IDNotFoundError(IDName);
     }
     return;
   }
@@ -166,7 +165,7 @@ export class Stowrage<DataType> {
   public async setValue(IDName: number | string, value: unknown, extraOptions?: SetValueOptions): Promise<void> {
     let index = -1;
     if (typeof IDName === "string") IDName = IDName.toLowerCase();
-    index = (typeof IDName === "number") ? this.#DB.findIndex((value) => value.id === IDName) : ((extraOptions?.exactMatch) ? this.#DB.findIndex((value) => value.name === IDName) : this.#DB.findIndex((value) => value.name.includes(IDName.toString())));
+    index = this.#DB.findIndex((value) => value.id === IDName || (extraOptions?.exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       if (typeof this.#DB[index].data === "object") {
         if (extraOptions?.key) {
@@ -178,6 +177,9 @@ export class Stowrage<DataType> {
         this.#DB[index].data = value;
       }
       await this.saveToDisk();
+    } else {
+      if (typeof IDName === "string") throw new NameNotFoundError(IDName);
+      if (typeof IDName === "number") throw new IDNotFoundError(IDName);
     }
     return;
   }
@@ -197,13 +199,8 @@ export class Stowrage<DataType> {
   public async incValue(id: number, key?: string): Promise<void>;
   public async incValue(IDName: number | string, key?: string): Promise<void> {
     let index = -1;
-    if (typeof IDName === "number") {
-      index = this.#DB.findIndex((value) => value.id === IDName);
-    }
-    if (typeof IDName === "string") {
-      IDName = IDName.toLowerCase();
-      index = this.#DB.findIndex((value) => value.name === IDName);
-    }
+    if (typeof IDName === "string") IDName = IDName.toLowerCase();
+    index = this.#DB.findIndex((value) => value.id === IDName || value.name === IDName);
     if (key && typeof this.#DB[index].data[key] === "number") {
       this.#DB[index].data[key]++;
     } else {
@@ -234,7 +231,10 @@ export class Stowrage<DataType> {
   public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase | undefined> {
     let index = -1;
     if (typeof IDName === "string") IDName = IDName.toLowerCase();
-      index = await new Promise<number>((resolve) => resolve(this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString()))));
+      index = await new Promise<number>((resolve) => {
+        if (typeof IDName === "string") IDName = IDName.toLowerCase();
+        resolve(this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString())));
+      });
     return this.#DB[index];
   }
 
@@ -274,16 +274,14 @@ export class Stowrage<DataType> {
   // deno-fmt-ignore
   public async delete(IDName: number | string, exactMatch?: boolean): Promise<void> {
     let index = -1;
-    if (typeof IDName === "string") {
-      index = (exactMatch)
-        ? this.#DB.findIndex((value) => value.name === IDName.toLowerCase())
-        : this.#DB.findIndex((value) => value.name.includes(IDName));
-    } else {
-      index = this.#DB.findIndex((value) => value.id === IDName);
-    }
+    if (typeof IDName === "string") IDName = IDName.toLowerCase();
+    index = this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       this.#DB.splice(index, 1);
       await this.saveToDisk();
+    } else {
+      if (typeof IDName === "string") throw new NameNotFoundError(IDName);
+      if (typeof IDName === "number") throw new IDNotFoundError(IDName);
     }
     return;
   }
@@ -301,7 +299,7 @@ export class Stowrage<DataType> {
   /**
   Delete every entry in the stowrage and remove it from disk
   */
-  public async deletestowrage(): Promise<void> {
+  public async deleteStowrage(): Promise<void> {
     this.#DB = [];
     this.#id = 0;
     if (this.saveLocation) await Deno.remove(this.saveLocation);
