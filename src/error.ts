@@ -20,7 +20,7 @@ export class InternalIDDuplicationError extends Error {
     return;
   }
 }
-export class NameNotFound extends Error {
+export class NameNotFoundError extends Error {
   public name = "\u001b[31;1mNAME NOT FOUND\u001b[0m";
   public message: string;
 
@@ -31,7 +31,7 @@ export class NameNotFound extends Error {
   }
 }
 
-export class IDNotFound extends Error {
+export class IDNotFoundError extends Error {
   public name = "\u001b[31;1mNAME DUPLICATION\u001b[0m";
   public message: string;
 
