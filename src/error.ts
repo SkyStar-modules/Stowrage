@@ -20,3 +20,24 @@ export class InternalIDDuplicationError extends Error {
     return;
   }
 }
+export class NameNotFound extends Error {
+  public name = "\u001b[31;1mNAME NOT FOUND\u001b[0m";
+  public message: string;
+
+  public constructor(name: string) {
+    super();
+    this.message = `entry name "${name}" could not be found`;
+    return;
+  }
+}
+
+export class IDNotFound extends Error {
+  public name = "\u001b[31;1mNAME DUPLICATION\u001b[0m";
+  public message: string;
+
+  public constructor(id: number) {
+    super();
+    this.message = `entry id "${id}" could not be found`;
+    return;
+  }
+}
