@@ -8,10 +8,10 @@ export async function save<T>(
 ): Promise<void> {
   name = nameCheck(name);
   const aes: AES = new AES(name, {
-    mode: 0,
+    mode: "cbc",
     iv: name,
   });
-  const data: Uint8Array = aes.encrypt(
+  const data: Uint8Array = await aes.encrypt(
     new TextEncoder().encode(JSON.stringify(db)),
   );
   await Deno.writeFile(path, data);
@@ -21,11 +21,11 @@ export async function save<T>(
 export async function load<T>(name: string, path: string): Promise<T[]> {
   name = nameCheck(name);
   const aes: AES = new AES(name, {
-    mode: 0,
+    mode: "cbc",
     iv: name,
   });
   const data: Uint8Array = await Deno.readFile(path);
-  const db: Uint8Array = aes.decrypt(data);
+  const db: Uint8Array = await aes.decrypt(data);
   return JSON.parse(new TextDecoder().decode(db));
 }
 
