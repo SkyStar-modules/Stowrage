@@ -6,8 +6,7 @@ export async function save<T>(
   path: string,
   db: T[],
 ): Promise<void> {
-  name = (name.length < 16) ? name + add.slice(name.length) : name;
-  name = (name.length > 16) ? name.slice(0, 16) : name;
+  name = nameCheck(name);
   const aes: AES = new AES(name, {
     mode: 0,
     iv: name,
@@ -19,14 +18,19 @@ export async function save<T>(
   return;
 }
 
-export function load<T>(name: string, path: string): T[] {
-  name = (name.length < 16) ? name + add.slice(name.length) : name;
-  name = (name.length > 16) ? name.slice(0, 16) : name;
+export async function load<T>(name: string, path: string): Promise<T[]> {
+  name = nameCheck(name);
   const aes: AES = new AES(name, {
     mode: 0,
     iv: name,
   });
-  const data: Uint8Array = Deno.readFileSync(path);
+  const data: Uint8Array = await Deno.readFile(path);
   const db: Uint8Array = aes.decrypt(data);
   return JSON.parse(new TextDecoder().decode(db));
+}
+
+function nameCheck(name: string): string {
+  name = (name.length < 16) ? name + add.slice(name.length) : name;
+  name = (name.length > 16) ? name.slice(0, 16) : name;
+  return name;
 }
