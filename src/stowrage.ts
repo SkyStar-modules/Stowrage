@@ -45,14 +45,18 @@ export class Stowrage<DataType> {
     return;
   }
 
-  public async init() {
+  /**
+  * Initiate stowrage
+  */
+  public async init(): Promise<void> {
     if (this.name && this.saveLocation) {
       if (!await fileExist("./stowrage")) await Deno.mkdir("./stowrage");
       if (await fileExist(this.saveLocation)) {
-        this.#DB = load<DataBase>(this.name, this.saveLocation);
+        this.#DB = await load<DataBase>(this.name, this.saveLocation);
         this.#id = this.TotalEntries();
       }
     }
+    return;
   }
 
   /**
@@ -61,23 +65,8 @@ export class Stowrage<DataType> {
   @param { DataType } data The item you want to store
   @returns { DataType } Return's the same data as you stored
   */
-  public async ensure(name: string, data: DataType): Promise<DataBase | void> {
-    interface key extends DataBase {
-      data: DataType;
-    }
-    const DBSIZE = this.#DB.length;
-    for (let i = 0; i < DBSIZE; i++) {
-      if (name === this.#DB[i].name) throw new NameDuplicationError(name);
-    }
-    const KEY: key = {
-      id: this.#id++,
-      name: name.toLowerCase(),
-      data,
-    };
-
-    this.#DB.push(KEY);
-    await this.saveToDisk();
-    return KEY;
+  public async ensure(name: string, data: DataType): Promise<DataBase> {
+    return await this.generateEntry(name, data);
   }
 
   /**
@@ -86,21 +75,7 @@ export class Stowrage<DataType> {
   @param { DataType } data The item you want to store
   */
   public async add(name: string, data: DataType): Promise<void> {
-    interface key extends DataBase {
-      data: DataType;
-    }
-    const DBSIZE = this.#DB.length;
-    for (let i = 0; i < DBSIZE; i++) {
-      if (name === this.#DB[i].name) throw new NameDuplicationError(name);
-    }
-    const KEY: key = {
-      id: this.#id++,
-      name: name.toLowerCase(),
-      data,
-    };
-
-    this.#DB.push(KEY);
-    await this.saveToDisk();
+    await this.generateEntry(name, data);
     return;
   }
 
@@ -340,5 +315,24 @@ export class Stowrage<DataType> {
       await save<DataBase>(this.name, this.saveLocation, this.#DB);
     }
     return;
+  }
+
+  private async generateEntry(name: string, data: DataType): Promise<DataBase> {
+    interface key extends DataBase {
+      data: DataType;
+    }
+    const DBSIZE = this.#DB.length;
+    for (let i = 0; i < DBSIZE; i++) {
+      if (name === this.#DB[i].name) throw new NameDuplicationError(name);
+    }
+    const KEY: key = {
+      id: this.#id++,
+      name: name.toLowerCase(),
+      data,
+    };
+
+    this.#DB.push(KEY);
+    await this.saveToDisk();
+    return KEY;
   }
 }
