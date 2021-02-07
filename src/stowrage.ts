@@ -26,7 +26,7 @@ import { fileExist } from "./filesystem.ts";
 @property { string | undefined } saveLocation path where persistent data will be stored
 @property { string | undefined } name name of the .stowrage file
 */
-export class Stowrage<DataType> {
+export class Stowrage<DataType extends unknown> {
   #DB: DataBase[] = [];
   #id = 0;
   public maxEntries: number | undefined;
@@ -231,6 +231,7 @@ export class Stowrage<DataType> {
 
   // deno-fmt-ignore
   public async fetchByRange(begin: number, length: number): Promise<DataBase[] | undefined> {
+    if (length === this.#DB.length) return this.#DB;
     const data: DataBase[] = await new Promise<DataBase[]>((resolve) =>
       resolve(
         this.#DB.filter((value) =>
@@ -269,6 +270,7 @@ export class Stowrage<DataType> {
     }
     return;
   }
+
   /**
   Delete entries in a specific range
   @param { number } begin The first ID to fetch
@@ -317,22 +319,28 @@ export class Stowrage<DataType> {
     return;
   }
 
+  /**
+   * generate Entry OBJ & return it
+   */
   private async generateEntry(name: string, data: DataType): Promise<DataBase> {
     interface key extends DataBase {
       data: DataType;
     }
-    const DBSIZE = this.#DB.length;
-    for (let i = 0; i < DBSIZE; i++) {
-      if (name === this.#DB[i].name) throw new NameDuplicationError(name);
-    }
+    const prom: Promise<void> = new Promise<void>((resolve) => {
+      const DBSIZE = this.#DB.length;
+      for (let i = 0; i < DBSIZE; i++) {
+        if (name === this.#DB[i].name) throw new NameDuplicationError(name);
+      }
+      resolve();
+    });
     const KEY: key = {
       id: this.#id++,
       name: name.toLowerCase(),
       data,
     };
-
+    await prom;
     this.#DB.push(KEY);
-    await this.saveToDisk();
+    this.saveToDisk();
     return KEY;
   }
 }

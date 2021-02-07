@@ -6,23 +6,23 @@ export async function save<T>(
   path: string,
   db: T[],
 ): Promise<void> {
-  name = nameCheck(name);
-  const aes: AES = new AES(name, {
+  const DBNAME = nameCheck(name);
+  const aes: AES = new AES(DBNAME, {
     mode: "cbc",
-    iv: name,
+    iv: DBNAME,
   });
   const data: Uint8Array = await aes.encrypt(
     new TextEncoder().encode(JSON.stringify(db)),
   );
-  await Deno.writeFile(path, data);
+  await Deno.writeFile(path, data, { create: true});
   return;
 }
 
 export async function load<T>(name: string, path: string): Promise<T[]> {
-  name = nameCheck(name);
-  const aes: AES = new AES(name, {
+  const DBNAME = nameCheck(name);
+  const aes: AES = new AES(DBNAME, {
     mode: "cbc",
-    iv: name,
+    iv: DBNAME,
   });
   const data: Uint8Array = await Deno.readFile(path);
   const db: Uint8Array = await aes.decrypt(data);
@@ -30,7 +30,6 @@ export async function load<T>(name: string, path: string): Promise<T[]> {
 }
 
 function nameCheck(name: string): string {
-  name = (name.length < 16) ? name + add.slice(name.length) : name;
-  name = (name.length > 16) ? name.slice(0, 16) : name;
+  name = (name.length < 16) ? name + add.slice(name.length) : ((name.length > 16) ? name.slice(0, 16) : name);
   return name;
 }
