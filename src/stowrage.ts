@@ -25,6 +25,7 @@ import { fileExist } from "./filesystem.ts";
 * stowrage class
 @property { string | undefined } saveLocation path where persistent data will be stored
 @property { string | undefined } name name of the .stowrage file
+@property { number | undefined } autoSave amount of time before autosave automatically saves the file(use this if you use the add and ensure method alot)
 */
 export class Stowrage<DataType extends unknown> {
   #DB: DataBase[] = [];
@@ -32,6 +33,7 @@ export class Stowrage<DataType extends unknown> {
   public maxEntries: number | undefined;
   public saveLocation: string | undefined;
   public name: string | undefined;
+  public autoSave: number | undefined;
 
   /**
   @param { StowrageOptions } options all start options for stowrage
@@ -39,14 +41,15 @@ export class Stowrage<DataType extends unknown> {
   public constructor(options?: StowrageOptions) {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
+    this.autoSave = options?.autoSave;
     this.saveLocation = (options?.saveToDisk && this.name)
       ? "./stowrage/" + this.name + ".stow"
       : undefined;
     return;
   }
 
-  /**
-  * Initiate stowrage
+  /**ettyy
+z  * Initiate stowrage
   */
   public async init(): Promise<void> {
     if (this.name && this.saveLocation) {
@@ -54,6 +57,7 @@ export class Stowrage<DataType extends unknown> {
       if (await fileExist(this.saveLocation)) {
         this.#DB = await load<DataBase>(this.name, this.saveLocation);
         this.#id = this.TotalEntries();
+        if (this.autoSave) setInterval(this.initiateAutosave, this.autoSave * 60);
       }
     }
     return;
@@ -115,7 +119,7 @@ export class Stowrage<DataType extends unknown> {
         data
       };
       this.#DB[index] = KEY;
-      await this.saveToDisk();
+      if (!this.autoSave) await this.saveToDisk();
     } else {
       if (typeof IDName === "string") throw new NameNotFoundError(IDName);
       if (typeof IDName === "number") throw new IDNotFoundError(IDName);
@@ -158,7 +162,7 @@ export class Stowrage<DataType extends unknown> {
       } else {
         this.#DB[index].data = value;
       }
-      await this.saveToDisk();
+      if (!this.autoSave) await this.saveToDisk();
     } else {
       if (typeof IDName === "string") throw new NameNotFoundError(IDName);
       if (typeof IDName === "number") throw new IDNotFoundError(IDName);
@@ -190,7 +194,7 @@ export class Stowrage<DataType extends unknown> {
     } else {
       this.#DB[index].data++;
     }
-    await this.saveToDisk();
+    if (!this.autoSave) await this.saveToDisk();
     return;
   }
 
@@ -263,7 +267,7 @@ export class Stowrage<DataType extends unknown> {
     index = this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       this.#DB.splice(index, 1);
-      await this.saveToDisk();
+      if (!this.autoSave) await this.saveToDisk();
     } else {
       if (typeof IDName === "string") throw new NameNotFoundError(IDName);
       if (typeof IDName === "number") throw new IDNotFoundError(IDName);
@@ -278,7 +282,7 @@ export class Stowrage<DataType extends unknown> {
   */
   public async deleteByRange(begin: number, length: number): Promise<void> {
     this.#DB.splice(begin, length);
-    await this.saveToDisk();
+    if (!this.autoSave) await this.saveToDisk();
     return;
   }
 
@@ -340,7 +344,14 @@ export class Stowrage<DataType extends unknown> {
     };
     await prom;
     this.#DB.push(KEY);
-    this.saveToDisk();
+    if (!this.autoSave) await this.saveToDisk();
     return KEY;
+  }
+
+  /**
+  * Autosave feature
+  */
+  private async initiateAutosave(): Promise<void> {
+    await this.saveToDisk();
   }
 }
