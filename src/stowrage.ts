@@ -3,7 +3,6 @@ import { size, sizeof } from "../deps.ts";
 
 import {
   IDNotFoundError,
-  InternalIDDuplicationError,
   NameDuplicationError,
   NameNotFoundError,
 } from "./error.ts";
@@ -20,7 +19,7 @@ import {
 import { load, save } from "./save.ts";
 
 // Import filesystem features
-import { fileExistSync } from "./filesystem.ts";
+import { fileExist } from "./filesystem.ts";
 
 /**
 * stowrage class
@@ -43,14 +42,17 @@ export class Stowrage<DataType> {
     this.saveLocation = (options?.saveToDisk && this.name)
       ? "./stowrage/" + this.name + ".stow"
       : undefined;
+    return;
+  }
+
+  public async init() {
     if (this.name && this.saveLocation) {
-      if (!fileExistSync("./stowrage")) Deno.mkdirSync("./stowrage");
-      if (fileExistSync(this.saveLocation)) {
+      if (!await fileExist("./stowrage")) await Deno.mkdir("./stowrage");
+      if (await fileExist(this.saveLocation)) {
         this.#DB = load<DataBase>(this.name, this.saveLocation);
         this.#id = this.TotalEntries();
       }
     }
-    return;
   }
 
   /**
