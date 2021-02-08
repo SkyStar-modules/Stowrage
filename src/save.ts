@@ -14,7 +14,7 @@ export async function save<T>(
   const data: Uint8Array = await aes.encrypt(
     new TextEncoder().encode(JSON.stringify(db)),
   );
-  await Deno.writeFile(path, data, { create: true });
+  await Deno.writeFile(path, data);
   return;
 }
 

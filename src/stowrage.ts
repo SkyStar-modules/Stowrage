@@ -19,7 +19,7 @@ import {
 import { load, save } from "./save.ts";
 
 // Import filesystem features
-import { fileExist } from "./filesystem.ts";
+import { pathExist } from "./filesystem.ts";
 
 /**
 * stowrage class
@@ -51,8 +51,8 @@ export class Stowrage<DataType extends unknown> {
   */
   public async init(): Promise<void> {
     if (this.name && this.saveLocation) {
-      if (!await fileExist("./stowrage")) await Deno.mkdir("./stowrage");
-      if (await fileExist(this.saveLocation)) {
+      if (!await pathExist("./stowrage")) await Deno.mkdir("./stowrage");
+      if (await pathExist(this.saveLocation)) {
         this.#DB = await load<DataBase>(this.name, this.saveLocation);
         this.#id = this.totalEntries();
       }
