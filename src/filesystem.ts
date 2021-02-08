@@ -1,17 +1,23 @@
-export function fileExistSync(path: string): boolean {
+export function pathExistSync(path: string): boolean {
   try {
     Deno.statSync(path);
-  } catch (e) {
-    return false;
+    return true;
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      return false;
+    }
+    throw error;
   }
-  return true;
 }
 
-export async function fileExist(path: string): Promise<boolean> {
+export async function pathExist(path: string): Promise<boolean> {
   try {
     await Deno.stat(path);
-  } catch (e) {
-    return false;
+    return true;
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      return false;
+    }
+    throw error;
   }
-  return true;
 }
