@@ -14,7 +14,7 @@ const data = new Stowrage();
 
 ### typesafe Stowrage
 
-A typesafe Stowrage only allow's user listed types to be used  
+A typesafe Stowrage only allow's user listed types to be used 
 The example shown below only allow's string's to be used
 
 ```ts
@@ -285,7 +285,8 @@ await data.deleteByRange(0, 1);
 
 ### deleteStowrage()
 
-delete everything in the Stowrage and also the stowrage file if `saveToDisk` is used
+delete everything in the Stowrage 
+and also the stowrage file if `saveToDisk` is used
 
 ```ts
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
