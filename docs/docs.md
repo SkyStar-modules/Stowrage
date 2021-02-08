@@ -32,7 +32,7 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage({
   name: "some name", // name of the Stowrage
-  filePath: ".", // optionally you can save the Stowrage by having both filePath and name selected
+  saveToDisk: true, // allow's you to save to disk
   maxEntries: 5, // max entries allowed in the Stowrage, automatically discard the oldest entry
 });
 ```
@@ -79,7 +79,7 @@ Add is the same as ensure, but it does not return the data
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
-data.add("name", "string");
+await data.add("name", "string");
 ```
 
 ### fetch(IDName: number|string)
@@ -90,7 +90,7 @@ get 1 entry by id or name
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
-data.add("somename", "string");
+await data.add("somename", "string");
 
 console.log(await fetch("somename"));
 // these give the same results
@@ -111,8 +111,8 @@ fetch all entries from a range
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
-data.add("somename", "string");
-data.add("somename1", "string");
+await data.add("somename", "string");
+await data.add("somename1", "string");
 
 console.log(await fetchByRange(0, 2));
 /** expected output:
@@ -140,9 +140,9 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
 
-data.add("name", "string"));
+await data.add("name", "string"));
 
-data.override("name", "other string", "newname");
+await data.override("name", "other string", "newname");
 console.log(await data.fetch("newname"));
 /** expected output:
 {
@@ -162,9 +162,9 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
 
-data.add("name", "string");
+await data.add("name", "string");
 
-data.setValue("name", "newValue");
+await data.setValue("name", "newValue");
 ```
 
 ```ts
@@ -187,7 +187,7 @@ console.log(await data.ensure("name", obj));
 }
 */
 
-data.setValue("name", "new value", { key: "thing" });
+await data.setValue("name", "new value", { key: "thing" });
 console.log(await data.fetch("name"));
 /** expected output:
 {
@@ -218,7 +218,7 @@ console.log(await data.ensure("name", obj));
 }
 */
 
-data.incValue("name", "key");
+await data.incValue("name", "key");
 console.log(await data.fetch("name"));
 /** expected output: 
 {
@@ -242,7 +242,7 @@ console.log(await data.ensure("name", 17);
     data: 17
 }
 */
-data.incValue("name");
+await data.incValue("name");
 console.log(await data.fetch("name"));
 /**
 {
@@ -262,11 +262,11 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
 
-data.ensure("name", "string");
+await data.ensure("name", "string");
 
-data.delete(0);
+await data.delete(0);
 // these do the same thing
-data.delete("name");
+await data.delete("name");
 ```
 
 ### DeleteByRange(begin: number, length: number)
@@ -277,24 +277,24 @@ Same as fetchByRange but it deletes the entries instead of fetching them
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
-data.add("somename", "string");
-data.add("somename1", "string");
+await data.add("somename", "string");
+await data.add("somename1", "string");
 
-data.deleteByRange(0, 1);
+await data.deleteByRange(0, 1);
 ```
 
 ### deleteStowrage()
 
-delete everything in the Stowrage
+delete everything in the Stowrage and also the stowrage file if `saveToDisk` is used
 
 ```ts
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
-data.add("somename", "string");
-data.add("somename1", "string");
+await data.add("somename", "string");
+await data.add("somename1", "string");
 
-data.deleteStowrage();
+await data.deleteStowrage();
 // Stowrage is now cleared
 ```
 
@@ -306,8 +306,8 @@ Get the size of the Stowrage
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
-data.add("somename", "string");
-data.add("somename1", "string");
+await data.add("somename", "string");
+await data.add("somename1", "string");
 
 console.log(data.stowrageSize());
 ```
@@ -320,8 +320,8 @@ gives the amount of total entries
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>();
-data.add("somename", "string");
-data.add("somename1", "string");
+await data.add("somename", "string");
+await data.add("somename1", "string");
 
 console.log(data.totalEntries());
 // expected output: 2
