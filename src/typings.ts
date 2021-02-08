@@ -9,7 +9,6 @@ export interface StowrageOptions {
   saveToDisk?: boolean;
   name?: string;
   maxEntries?: number;
-  autoSave?: number;
 }
 
 export interface ChangeValueOptions {

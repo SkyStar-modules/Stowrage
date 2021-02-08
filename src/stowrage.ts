@@ -33,7 +33,6 @@ export class Stowrage<DataType extends unknown> {
   public maxEntries: number | undefined;
   public saveLocation: string | undefined;
   public name: string | undefined;
-  public autoSave: number | undefined;
 
   /**
   @param { StowrageOptions } options all start options for stowrage
@@ -41,7 +40,6 @@ export class Stowrage<DataType extends unknown> {
   public constructor(options?: StowrageOptions) {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
-    this.autoSave = options?.autoSave;
     this.saveLocation = (options?.saveToDisk && this.name)
       ? "./stowrage/" + this.name + ".stow"
       : undefined;
@@ -57,7 +55,6 @@ z  * Initiate stowrage
       if (await fileExist(this.saveLocation)) {
         this.#DB = await load<DataBase>(this.name, this.saveLocation);
         this.#id = this.totalEntries();
-        if (this.autoSave) setInterval(this.initiateAutosave, this.autoSave * 60);
       }
     }
     return;
@@ -119,7 +116,7 @@ z  * Initiate stowrage
         data
       };
       this.#DB[index] = KEY;
-      if (!this.autoSave) await this.saveToDisk();
+      await this.saveToDisk();
     } else {
       if (typeof IDName === "string") throw new NameNotFoundError(IDName);
       if (typeof IDName === "number") throw new IDNotFoundError(IDName);
@@ -162,7 +159,7 @@ z  * Initiate stowrage
       } else {
         this.#DB[index].data = value;
       }
-      if (!this.autoSave) await this.saveToDisk();
+      await this.saveToDisk();
     } else {
       if (typeof IDName === "string") throw new NameNotFoundError(IDName);
       if (typeof IDName === "number") throw new IDNotFoundError(IDName);
@@ -194,7 +191,7 @@ z  * Initiate stowrage
     } else {
       this.#DB[index].data++;
     }
-    if (!this.autoSave) await this.saveToDisk();
+    await this.saveToDisk();
     return;
   }
 
@@ -267,7 +264,7 @@ z  * Initiate stowrage
     index = this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       this.#DB.splice(index, 1);
-      if (!this.autoSave) await this.saveToDisk();
+      await this.saveToDisk();
     } else {
       if (typeof IDName === "string") throw new NameNotFoundError(IDName);
       if (typeof IDName === "number") throw new IDNotFoundError(IDName);
@@ -282,7 +279,7 @@ z  * Initiate stowrage
   */
   public async deleteByRange(begin: number, length: number): Promise<void> {
     this.#DB.splice(begin, length);
-    if (!this.autoSave) await this.saveToDisk();
+    await this.saveToDisk();
     return;
   }
 
@@ -344,14 +341,7 @@ z  * Initiate stowrage
     };
     await prom;
     this.#DB.push(KEY);
-    if (!this.autoSave) await this.saveToDisk();
-    return KEY;
-  }
-
-  /**
-  * Autosave feature
-  */
-  private async initiateAutosave(): Promise<void> {
     await this.saveToDisk();
+    return KEY;
   }
 }
