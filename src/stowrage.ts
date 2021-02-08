@@ -46,8 +46,8 @@ export class Stowrage<DataType extends unknown> {
     return;
   }
 
-  /**ettyy
-z  * Initiate stowrage
+  /**
+  * Initiate stowrage
   */
   public async init(): Promise<void> {
     if (this.name && this.saveLocation) {

@@ -14,7 +14,7 @@ export async function save<T>(
   const data: Uint8Array = await aes.encrypt(
     new TextEncoder().encode(JSON.stringify(db)),
   );
-  await Deno.writeFile(path, data, { create: true});
+  await Deno.writeFile(path, data, { create: true });
   return;
 }
 
@@ -30,6 +30,8 @@ export async function load<T>(name: string, path: string): Promise<T[]> {
 }
 
 function nameCheck(name: string): string {
-  name = (name.length < 16) ? name + add.slice(name.length) : ((name.length > 16) ? name.slice(0, 16) : name);
+  name = (name.length < 16)
+    ? name + add.slice(name.length)
+    : ((name.length > 16) ? name.slice(0, 16) : name);
   return name;
 }
