@@ -56,7 +56,7 @@ z  * Initiate stowrage
       if (!await fileExist("./stowrage")) await Deno.mkdir("./stowrage");
       if (await fileExist(this.saveLocation)) {
         this.#DB = await load<DataBase>(this.name, this.saveLocation);
-        this.#id = this.TotalEntries();
+        this.#id = this.totalEntries();
         if (this.autoSave) setInterval(this.initiateAutosave, this.autoSave * 60);
       }
     }
@@ -306,7 +306,7 @@ z  * Initiate stowrage
   /**
   * Get total entries in the stowrage 
   */
-  public TotalEntries(): number {
+  public totalEntries(): number {
     return this.#DB.length;
   }
 
@@ -314,7 +314,7 @@ z  * Initiate stowrage
   * Save #DB on disk
   */
   private async saveToDisk(): Promise<void> {
-    if (this.maxEntries && this.TotalEntries() > this.maxEntries) {
+    if (this.maxEntries && this.totalEntries() > this.maxEntries) {
       this.#DB.splice(0, 1);
     }
     if (this.name && this.saveLocation) {
