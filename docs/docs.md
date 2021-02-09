@@ -283,6 +283,43 @@ await data.add("somename1", "string");
 await data.deleteByRange(0, 1);
 ```
 
+### filter(filter: FilterFunc)
+
+get all entries with your specific filter
+
+```ts
+const data = new Stowrage<string>();
+await data.add("somename", "string");
+await data.add("somename1", "string");
+
+await data.filter(entry => entry.name.includes("somename"));
+```
+
+### find(filter: FilterFunc)
+
+get the first entry with your specific filter
+
+```ts
+const data = new Stowrage<string>();
+await data.add("somename", "string");
+await data.add("somename1", "string");
+
+await data.find(entry => entry.name.includes("somename"));
+```
+
+### has(searchName: string)
+
+check if stowrage has an entry with the searchname
+
+```ts
+const data = new Stowrage<string>();
+await data.add("somename", "string");
+await data.add("somename1", "string");
+
+console.log(await data.has("somename")) // true
+console.log(await data.has("!Exist")) // false
+```
+
 ### deleteStowrage()
 
 delete everything in the Stowrage  
@@ -296,7 +333,7 @@ await data.add("somename", "string");
 await data.add("somename1", "string");
 
 await data.deleteStowrage();
-// Stowrage is now cleared
+// Stowrage is now empty
 ```
 
 ### stowrageSize()
