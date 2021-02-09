@@ -11,9 +11,9 @@ import {
 import {
   ChangeValueOptions,
   DataBase,
+  FilterFunc,
   SetValueOptions,
   StowrageOptions,
-  FilterFunc
 } from "./typings.ts";
 
 // Import load and save features
@@ -294,7 +294,7 @@ export class Stowrage<DataType extends unknown> {
   @returns { Promise<DataBase | undefined> } - return's the first match of the entry
   */
   public async find(filter: FilterFunc): Promise<DataBase | undefined> {
-    return await new Promise((resolve) => resolve(this.#DB.find(filter)))
+    return await new Promise((resolve) => resolve(this.#DB.find(filter)));
   }
 
   /**
@@ -303,7 +303,9 @@ export class Stowrage<DataType extends unknown> {
   @returns { Promise<boolean> } - returns a boolean
   */
   public async has(searchName: string): Promise<boolean> {
-    return await new Promise((resolve) => resolve(this.#DB.findIndex(value => value.name === searchName) > -1))
+    return await new Promise((resolve) =>
+      resolve(this.#DB.findIndex((value) => value.name === searchName) > -1)
+    );
   }
 
   /**

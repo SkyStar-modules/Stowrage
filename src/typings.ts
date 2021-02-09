@@ -20,6 +20,6 @@ export interface SetValueOptions extends ChangeValueOptions {
 }
 
 export interface FilterFunc {
-  (value: DataBase, index: number, array: DataBase[]): any,
-  thisArg?: any
+  (value: DataBase, index: number, array: DataBase[]): any;
+  thisArg?: any;
 }
