@@ -18,3 +18,8 @@ export interface ChangeValueOptions {
 export interface SetValueOptions extends ChangeValueOptions {
   exactMatch?: boolean;
 }
+
+export interface FilterFunc {
+  (value: DataBase, index: number, array: DataBase[]): any;
+  thisArg?: any;
+}

@@ -11,6 +11,7 @@ import {
 import {
   ChangeValueOptions,
   DataBase,
+  FilterFunc,
   SetValueOptions,
   StowrageOptions,
 } from "./typings.ts";
@@ -23,9 +24,9 @@ import { pathExist, pathExistSync } from "./filesystem.ts";
 
 /**
 * stowrage class
-@property { string | undefined } saveLocation path where persistent data will be stored
-@property { string | undefined } name name of the .stowrage file
-@property { number | undefined } autoSave amount of time before autosave automatically saves the file(use this if you use the add and ensure method alot)
+@property { string | undefined } saveLocation - path where persistent data will be stored
+@property { string | undefined } name - name of the .stowrage file
+@property { number | undefined } autoSave - amount of time before autosave automatically saves the file(use this if you use the add and ensure method alot)
 */
 export class Stowrage<DataType extends unknown> {
   #DB: DataBase[] = [];
@@ -35,13 +36,13 @@ export class Stowrage<DataType extends unknown> {
   public name: string | undefined;
 
   /**
-  @param { StowrageOptions } options all start options for stowrage
+  @param { StowrageOptions } options - all start options for stowrage
   */
   public constructor(options?: StowrageOptions) {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
     this.saveLocation = (options?.saveToDisk && this.name)
-      ? "./stowrage/" + this.name + ".stow"
+      ? "./stowrage/" + this.name.toLowerCase() + ".stow"
       : undefined;
     if (!pathExistSync("./stowrage")) Deno.mkdirSync("./stowrage");
     return;
@@ -63,9 +64,9 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   * Add an entry to stowrage and return it
-  @param { string } name The name of the data you want
-  @param { DataType } data The item you want to store
-  @returns { DataType } Return's the same data as you stored
+  @param { string } name - The name of the data you want
+  @param { DataType } data - The item you want to store
+  @returns { DataType } - Return's the same data as you stored
   */
   public async ensure(name: string, data: DataType): Promise<DataBase> {
     return await this.generateEntry(name, data);
@@ -73,8 +74,8 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   * Add an entry to the stowrage
-  @param { string } name The name of the data you want
-  @param { DataType } data The item you want to store
+  @param { string } name - The name of the data you want
+  @param { DataType } data - The item you want to store
   */
   public async add(name: string, data: DataType): Promise<void> {
     await this.generateEntry(name, data);
@@ -84,9 +85,9 @@ export class Stowrage<DataType extends unknown> {
   /**
   * Override an entry in the stowrage
   * NOTE: the override will keep the id
-  @param { number } id The id of the entry to override
-  @param { string } newName The new name for the entry
-  @param { DataType } data The item you want to store
+  @param { number } id - The id of the entry to override
+  @param { string } newName - The new name for the entry
+  @param { DataType } data - The item you want to store
   */
 
   // deno-fmt-ignore
@@ -95,9 +96,9 @@ export class Stowrage<DataType extends unknown> {
   /**
   Override an entry in the stowrage
   NOTE: the override will keep the id
-  @param { string } searchName The name of the entry to override
-  @param { string } newName The new name for the entry
-  @param { DataType } data The item you want to store
+  @param { string } searchName - The name of the entry to override
+  @param { string } newName - The new name for the entry
+  @param { DataType } data - The item you want to store
   */
 
   // deno-fmt-ignore
@@ -105,7 +106,7 @@ export class Stowrage<DataType extends unknown> {
 
   // deno-fmt-ignore
   public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
-    const index = this.#DB.findIndex((value) => value.name === IDName.toString().toLowerCase() || value.id === IDName)
+    const index = this.#DB.findIndex((value) => value.name === IDName.toString() || value.id === IDName)
 
     interface key extends DataBase {
       data: DataType;
@@ -113,7 +114,7 @@ export class Stowrage<DataType extends unknown> {
     if (index > -1) {
       const KEY: key = {
         id: this.#DB[index].id,
-        name: (newName) ? newName.toLowerCase() : this.#DB[index].name,
+        name: (newName) ? newName : this.#DB[index].name,
         data
       };
       this.#DB[index] = KEY;
@@ -127,9 +128,9 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   set the value of an entry via a name or id
-  @param { string } name Name of the entry to search for
-  @param { unknown } value The new value that you want to store
-  @param { SetValueOptions } extraOptions Extra options
+  @param { string } name - Name of the entry to search for
+  @param { unknown } value - The new value that you want to store
+  @param { SetValueOptions } extraOptions - Extra options
   */
 
   // deno-fmt-ignore
@@ -137,9 +138,9 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   set the value of an entry via a name or id
-  @param { number } id ID of the entry to search for
-  @param { unknown } value The new value that you want to store
-  @param { ChangeValueOptions } extraOptions Extra options
+  @param { number } id - ID of the entry to search for
+  @param { unknown } value - The new value that you want to store
+  @param { ChangeValueOptions } extraOptions - Extra options
   */
 
   // deno-fmt-ignore
@@ -148,7 +149,6 @@ export class Stowrage<DataType extends unknown> {
   // deno-fmt-ignore
   public async setValue(IDName: number | string, value: unknown, extraOptions?: SetValueOptions): Promise<void> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
     index = this.#DB.findIndex((value) => value.id === IDName || (extraOptions?.exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       if (typeof this.#DB[index].data === "object") {
@@ -170,20 +170,19 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   Increase value by name
-  @param { string } name Name of the entry to search for
-  @param { string } key The key you want to increment the value of
+  @param { string } name - Name of the entry to search for
+  @param { string } key - The key you want to increment the value of
   */
   public async incValue(name: string, key?: string): Promise<void>;
 
   /**
   Increase value by ID
-  @param { number } id ID of the entry to search for
-  @param { string } key The key you want to increment the value of
+  @param { number } id - ID of the entry to search for
+  @param { string } key - The key you want to increment the value of
   */
   public async incValue(id: number, key?: string): Promise<void>;
   public async incValue(IDName: number | string, key?: string): Promise<void> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
     index = this.#DB.findIndex((value) =>
       value.id === IDName || value.name === IDName
     );
@@ -198,16 +197,16 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   Fetch entry by ID
-  @param { number } id ID of the entry you want to fetch
-  @returns { DataBase | undefined } return's the entry or undefined if not found
+  @param { number } id - ID of the entry you want to fetch
+  @returns { DataBase | undefined } - return's the entry or undefined if not found
   */
   public async fetch(id: number): Promise<DataBase | undefined>;
 
   /**
   Fetch entry by name
-  @param { string } name Name of the entry you want to fetch
-  @param { boolean } exactMatch optional: allow the search to be an exact match
-  @returns { DataBase | undefined } return's the entry or undefined if not found
+  @param { string } name - Name of the entry you want to fetch
+  @param { boolean } exactMatch - optional: allow the search to be an exact match
+  @returns { DataBase | undefined } - return's the entry or undefined if not found
   */
 
   // deno-fmt-ignore
@@ -216,9 +215,7 @@ export class Stowrage<DataType extends unknown> {
   // deno-fmt-ignore
   public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase | undefined> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
       index = await new Promise<number>((resolve) => {
-        if (typeof IDName === "string") IDName = IDName.toLowerCase();
         resolve(this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString())));
       });
     return this.#DB[index];
@@ -226,13 +223,13 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   Fetch all entries by a range of id's
-  @param { number } begin The first ID to fetch
-  @param { number } length Length of the list
-  @returns { Promise<DataBase[] | undefined> } Returns an array with all entries found, or undefined if no entries were found
+  @param { number } begin - The first ID to fetch
+  @param { number } length - Length of the list
+  @returns { Promise<DataBase[] | undefined> } - Returns an array with all entries found, or undefined if no entries were found
   */
 
   // deno-fmt-ignore
-  public async fetchByRange(begin: number, length: number): Promise<DataBase[] | undefined> {
+  public async fetchByRange(begin: number, length: number): Promise<DataBase[]> {
     if (length === this.#DB.length) return this.#DB;
     const data: DataBase[] = await new Promise<DataBase[]>((resolve) =>
       resolve(
@@ -241,27 +238,25 @@ export class Stowrage<DataType extends unknown> {
         ),
       )
     );
-    if (data.length === 0) return undefined;
     return data;
   }
 
   /**
   Delete entry by ID
-  @param { number } id ID of the entry you want to fetch
+  @param { number } id - ID of the entry you want to fetch
   */
   public async delete(id: number): Promise<void>;
 
   /**
   Delete entry by name
-  @param { string } name Name of the entry you want to fetch
-  @param { boolean } exactMatch optional: allow the search to be an exact match
+  @param { string } name - Name of the entry you want to fetch
+  @param { boolean } exactMatch - optional: allow the search to be an exact match
   */
-  public async delete(name: string): Promise<void>;
+  public async delete(name: string, exactMatch?: boolean): Promise<void>;
 
   // deno-fmt-ignore
   public async delete(IDName: number | string, exactMatch?: boolean): Promise<void> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
     index = this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       this.#DB.splice(index, 1);
@@ -275,13 +270,42 @@ export class Stowrage<DataType extends unknown> {
 
   /**
   Delete entries in a specific range
-  @param { number } begin The first ID to fetch
-  @param { number } length Length of the list
+  @param { number } begin - The first ID to fetch
+  @param { number } length - Length of the list
   */
   public async deleteByRange(begin: number, length: number): Promise<void> {
     this.#DB.splice(begin, length);
     await this.saveToDisk();
     return;
+  }
+
+  /**
+  Filter through stowrage
+  @param { FilterFunc } filter- Custom filter you want to use
+  @returns { Promise<DataBase[]> } - return's an array of the matching entries
+  */
+  public async filter(filter: FilterFunc): Promise<DataBase[]> {
+    return await new Promise((resolve) => resolve(this.#DB.filter(filter)));
+  }
+
+  /**
+  Find the first entry with your specific filter
+  @param { FilterFunc } filter - Custom filter you want to use
+  @returns { Promise<DataBase | undefined> } - return's the first match of the entry
+  */
+  public async find(filter: FilterFunc): Promise<DataBase | undefined> {
+    return await new Promise((resolve) => resolve(this.#DB.find(filter)));
+  }
+
+  /**
+  Check if your stowrage has an entry with the given name
+  @param { string } searchName - name to search for
+  @returns { Promise<boolean> } - returns a boolean
+  */
+  public async has(searchName: string): Promise<boolean> {
+    return await new Promise((resolve) =>
+      resolve(this.#DB.findIndex((value) => value.name === searchName) > -1)
+    );
   }
 
   /**
@@ -302,14 +326,14 @@ export class Stowrage<DataType extends unknown> {
   }
 
   /**
-  * Get total entries in the stowrage 
+  Get total entries in the stowrage 
   */
   public totalEntries(): number {
     return this.#DB.length;
   }
 
   /**
-  * Save #DB on disk
+  Save #DB on disk
   */
   private async saveToDisk(): Promise<void> {
     if (this.maxEntries && this.totalEntries() > this.maxEntries) {
@@ -322,8 +346,8 @@ export class Stowrage<DataType extends unknown> {
   }
 
   /**
-   * generate Entry OBJ & return it
-   */
+  generate Entry OBJ & return it
+  */
   private async generateEntry(name: string, data: DataType): Promise<DataBase> {
     interface key extends DataBase {
       data: DataType;
@@ -337,7 +361,7 @@ export class Stowrage<DataType extends unknown> {
     });
     const KEY: key = {
       id: this.#id++,
-      name: name.toLowerCase(),
+      name: name,
       data,
     };
     await prom;
