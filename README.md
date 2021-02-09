@@ -1,5 +1,10 @@
 # Stowrage
 
+![Custom badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Flatest-version%2Fx%2Fstowrage%2Fmod.ts)
+![Custom badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Fupdates%2Fx%2Fstowrage%2Fmod.ts)  
+![Custom badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Fcache-size%2Fx%2Fstowrage%2Fmod.ts)
+&nbsp;&nbsp;![Custom badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Fdep-count%2Fx%2Fstowrage%2Fmod.ts)
+
 ## Why use stowrage?
 
 - easy to use
