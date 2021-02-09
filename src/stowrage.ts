@@ -19,7 +19,7 @@ import {
 import { load, save } from "./save.ts";
 
 // Import filesystem features
-import { pathExist } from "./filesystem.ts";
+import { pathExist, pathExistSync } from "./filesystem.ts";
 
 /**
 * stowrage class
@@ -43,6 +43,7 @@ export class Stowrage<DataType extends unknown> {
     this.saveLocation = (options?.saveToDisk && this.name)
       ? "./stowrage/" + this.name + ".stow"
       : undefined;
+    if (!pathExistSync("./stowrage")) Deno.mkdirSync("./stowrage");
     return;
   }
 
