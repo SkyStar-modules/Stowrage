@@ -5,6 +5,7 @@ import {
   IDNotFoundError,
   NameDuplicationError,
   NameNotFoundError,
+  DBOverrideError
 } from "./error.ts";
 
 // Import types from local typings.ts
@@ -34,7 +35,7 @@ export class Stowrage<DataType extends unknown> {
   public maxEntries: number | undefined;
   public saveLocation: string | undefined;
   public name: string | undefined;
-
+  public DBLoaded = false;
   /**
   @param { StowrageOptions } options - all start options for stowrage
   */
@@ -56,6 +57,7 @@ export class Stowrage<DataType extends unknown> {
       if (!await pathExist("./stowrage")) await Deno.mkdir("./stowrage");
       if (await pathExist(this.saveLocation)) {
         this.#DB = await load<DataBase>(this.name, this.saveLocation);
+        this.DBLoaded = true;
         this.#id = this.totalEntries();
       }
     }
@@ -338,6 +340,9 @@ export class Stowrage<DataType extends unknown> {
   private async saveToDisk(): Promise<void> {
     if (this.maxEntries && this.totalEntries() > this.maxEntries) {
       this.#DB.splice(0, 1);
+    }
+    if (!this.DBLoaded && this.saveLocation) {
+      throw new DBOverrideError();
     }
     if (this.name && this.saveLocation) {
       await save<DataBase>(this.name, this.saveLocation, this.#DB);
