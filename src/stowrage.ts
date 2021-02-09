@@ -13,6 +13,7 @@ import {
   DataBase,
   SetValueOptions,
   StowrageOptions,
+  FilterFunc
 } from "./typings.ts";
 
 // Import load and save features
@@ -232,7 +233,7 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async fetchByRange(begin: number, length: number): Promise<DataBase[] | undefined> {
+  public async fetchByRange(begin: number, length: number): Promise<DataBase[]> {
     if (length === this.#DB.length) return this.#DB;
     const data: DataBase[] = await new Promise<DataBase[]>((resolve) =>
       resolve(
@@ -241,7 +242,6 @@ export class Stowrage<DataType extends unknown> {
         ),
       )
     );
-    if (data.length === 0) return undefined;
     return data;
   }
 
@@ -282,6 +282,33 @@ export class Stowrage<DataType extends unknown> {
     this.#DB.splice(begin, length);
     await this.saveToDisk();
     return;
+  }
+
+  /**
+  Filter through stowrage
+  @param { FilterFunc } filter Custom filter you want to use
+  @returns { Promise<DataBase[]> } return's an array of the matching entries
+  */
+  public async filter(filter: FilterFunc): Promise<DataBase[]> {
+    return await new Promise((resolve) => resolve(this.#DB.filter(filter)));
+  }
+
+  /**
+  Find the first entry with your specific filter
+  @param { FilterFunc } filter Custom filter you want to use
+  @returns { Promise<DataBase | undefined> } return's the first match of the entry
+  */
+  public async find(filter: FilterFunc): Promise<DataBase | undefined> {
+    return await new Promise((resolve) => resolve(this.#DB.find(filter)))
+  }
+
+  /**
+  Check if your stowrage has an entry with the given name
+  @param { string } searchName name to search for
+  @returns { Promise<boolean> } returns a boolean
+  */
+  public async has(searchName: string): Promise<boolean> {
+    return await new Promise((resolve) => resolve(this.#DB.findIndex(value => value.name === searchName) > -1))
   }
 
   /**
