@@ -42,7 +42,7 @@ export class Stowrage<DataType extends unknown> {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
     this.saveLocation = (options?.saveToDisk && this.name)
-      ? "./stowrage/" + this.name + ".stow"
+      ? "./stowrage/" + this.name.toLowerCase() + ".stow"
       : undefined;
     if (!pathExistSync("./stowrage")) Deno.mkdirSync("./stowrage");
     return;
@@ -106,7 +106,7 @@ export class Stowrage<DataType extends unknown> {
 
   // deno-fmt-ignore
   public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
-    const index = this.#DB.findIndex((value) => value.name === IDName.toString().toLowerCase() || value.id === IDName)
+    const index = this.#DB.findIndex((value) => value.name === IDName.toString() || value.id === IDName)
 
     interface key extends DataBase {
       data: DataType;
@@ -114,7 +114,7 @@ export class Stowrage<DataType extends unknown> {
     if (index > -1) {
       const KEY: key = {
         id: this.#DB[index].id,
-        name: (newName) ? newName.toLowerCase() : this.#DB[index].name,
+        name: (newName) ? newName : this.#DB[index].name,
         data
       };
       this.#DB[index] = KEY;
@@ -149,7 +149,6 @@ export class Stowrage<DataType extends unknown> {
   // deno-fmt-ignore
   public async setValue(IDName: number | string, value: unknown, extraOptions?: SetValueOptions): Promise<void> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
     index = this.#DB.findIndex((value) => value.id === IDName || (extraOptions?.exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       if (typeof this.#DB[index].data === "object") {
@@ -184,7 +183,6 @@ export class Stowrage<DataType extends unknown> {
   public async incValue(id: number, key?: string): Promise<void>;
   public async incValue(IDName: number | string, key?: string): Promise<void> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
     index = this.#DB.findIndex((value) =>
       value.id === IDName || value.name === IDName
     );
@@ -217,9 +215,7 @@ export class Stowrage<DataType extends unknown> {
   // deno-fmt-ignore
   public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase | undefined> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
       index = await new Promise<number>((resolve) => {
-        if (typeof IDName === "string") IDName = IDName.toLowerCase();
         resolve(this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString())));
       });
     return this.#DB[index];
@@ -261,7 +257,6 @@ export class Stowrage<DataType extends unknown> {
   // deno-fmt-ignore
   public async delete(IDName: number | string, exactMatch?: boolean): Promise<void> {
     let index = -1;
-    if (typeof IDName === "string") IDName = IDName.toLowerCase();
     index = this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       this.#DB.splice(index, 1);
@@ -364,7 +359,7 @@ export class Stowrage<DataType extends unknown> {
     });
     const KEY: key = {
       id: this.#id++,
-      name: name.toLowerCase(),
+      name: name,
       data,
     };
     await prom;
