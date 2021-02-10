@@ -12,6 +12,7 @@ export interface StowrageOptions {
 }
 
 export interface ChangeValueOptions {
+  newValue: unknown;
   key?: string;
 }
 

@@ -3,7 +3,7 @@ const add = "1234567890!@#$%^";
 
 export async function save<T>(
   name: string,
-  path: string,
+  path: URL,
   db: T[],
 ): Promise<void> {
   const DBNAME = nameCheck(name);
@@ -18,7 +18,7 @@ export async function save<T>(
   return;
 }
 
-export async function load<T>(name: string, path: string): Promise<T[]> {
+export async function load<T>(name: string, path: URL): Promise<T[]> {
   const DBNAME = nameCheck(name);
   const aes: AES = new AES(DBNAME, {
     mode: "cbc",
