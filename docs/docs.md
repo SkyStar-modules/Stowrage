@@ -187,7 +187,7 @@ console.log(await data.ensure("name", obj));
 }
 */
 
-await data.setValue("name", "new value", { key: "thing" });
+await data.setValue("name", { key: "thing", newValue: "new value" });
 console.log(await data.fetch("name"));
 /** expected output:
 {
@@ -218,7 +218,7 @@ console.log(await data.ensure("name", obj));
 }
 */
 
-await data.incValue("name", "key");
+await data.incValue("name", "thing");
 console.log(await data.fetch("name"));
 /** expected output: 
 {
@@ -280,7 +280,7 @@ const data = new Stowrage<string>();
 await data.add("somename", "string");
 await data.add("somename1", "string");
 
-await data.deleteByRange(0, 1);
+await data.deleteByRange(0, 2);
 ```
 
 ### filter(filter: FilterFunc)
