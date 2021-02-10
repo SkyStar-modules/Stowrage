@@ -9,7 +9,21 @@
 
 - easy to use
 - fast
-- reliable
+- good introduction to better solution's
+
+## Quick Example
+
+```ts
+import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
+
+const data = new Stowrage<string>({
+  name: "some name", // name of the Stowrage
+  saveToDisk: true, // allow's you to save to disk
+  maxEntries: 5, // max entries allowed in the Stowrage, automatically discard the oldest entry
+});
+
+await data.ensure("coolname", "sumstring");
+```
 
 ## Documentation
 
