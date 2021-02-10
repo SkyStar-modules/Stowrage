@@ -4,8 +4,7 @@ import { size, sizeof } from "../deps.ts";
 import {
   IDNotFoundError,
   NameDuplicationError,
-  NameNotFoundError,
-  DBOverrideError
+  NameNotFoundError
 } from "./error.ts";
 
 // Import types from local typings.ts
@@ -33,9 +32,8 @@ export class Stowrage<DataType extends unknown> {
   #DB: DataBase[] = [];
   #id = 0;
   public maxEntries: number | undefined;
-  public saveLocation: string | undefined;
+  public saveLocation: URL | undefined;
   public name: string | undefined;
-  public DBLoaded = false;
   /**
   @param { StowrageOptions } options - all start options for stowrage
   */
@@ -43,9 +41,10 @@ export class Stowrage<DataType extends unknown> {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
     this.saveLocation = (options?.saveToDisk && this.name)
-      ? "./stowrage/" + this.name.toLowerCase() + ".stow"
+      ? new URL("../stowrage/" + this.name.toLowerCase() + ".stow", import.meta.url)
       : undefined;
-    if (!pathExistSync("./stowrage")) Deno.mkdirSync("./stowrage");
+    const stowrageURL = new URL("../stowrage", import.meta.url)
+    if (!pathExistSync(stowrageURL)) Deno.mkdirSync(stowrageURL);
     return;
   }
 
@@ -54,10 +53,10 @@ export class Stowrage<DataType extends unknown> {
   */
   public async init(): Promise<void> {
     if (this.name && this.saveLocation) {
-      if (!await pathExist("./stowrage")) await Deno.mkdir("./stowrage");
+      const stowrageURL = new URL("../stowrage", import.meta.url)
+      if (!await pathExist(stowrageURL)) await Deno.mkdir(stowrageURL);
       if (await pathExist(this.saveLocation)) {
         this.#DB = await load<DataBase>(this.name, this.saveLocation);
-        this.DBLoaded = true;
         this.#id = this.totalEntries();
       }
     }
@@ -340,9 +339,6 @@ export class Stowrage<DataType extends unknown> {
   private async saveToDisk(): Promise<void> {
     if (this.maxEntries && this.totalEntries() > this.maxEntries) {
       this.#DB.splice(0, 1);
-    }
-    if (!this.DBLoaded && this.saveLocation) {
-      throw new DBOverrideError();
     }
     if (this.name && this.saveLocation) {
       await save<DataBase>(this.name, this.saveLocation, this.#DB);

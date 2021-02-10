@@ -30,14 +30,3 @@ export class IDNotFoundError extends Error {
     return;
   }
 }
-
-export class DBOverrideError extends Error {
-  public name = "\u001b[31;1mTRIED TO OVERRIDE DB\u001b[0m";
-  public message: string;
-
-  public constructor() {
-    super();
-    this.message = `DB is not initiated but saveToDisk is set to ${true}`;
-    return;
-  }
-}
