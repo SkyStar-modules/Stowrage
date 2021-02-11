@@ -32,7 +32,7 @@ import { pathExist, pathExistSync } from "./filesystem.ts";
 @property { number | undefined } autoSave - amount of time before autosave automatically saves the file(use this if you use the add and ensure method alot)
 */
 export class Stowrage<DataType extends unknown> {
-  #DB: DataBase[] = [];
+  #DB: DataBase<DataType>[] = [];
   #id = 0;
   public maxEntries: number | undefined;
   public saveLocation: URL | undefined;
@@ -62,7 +62,7 @@ export class Stowrage<DataType extends unknown> {
       const stowrageURL = new URL("../stowrage", import.meta.url);
       if (!await pathExist(stowrageURL)) await Deno.mkdir(stowrageURL);
       if (await pathExist(this.saveLocation)) {
-        this.#DB = await load<DataBase>(this.name, this.saveLocation);
+        this.#DB = await load<DataBase<DataType>>(this.name, this.saveLocation);
         this.#id = this.totalEntries();
       }
     }
@@ -75,7 +75,7 @@ export class Stowrage<DataType extends unknown> {
   @param { DataType } data - The item you want to store
   @returns { DataType } return's the same data as you stored
   */
-  public async ensure(name: string, data: DataType): Promise<DataBase> {
+  public async ensure(name: string, data: DataType): Promise<DataBase<DataType>> {
     return await this.generateEntry(name, data);
   }
 
@@ -115,7 +115,7 @@ export class Stowrage<DataType extends unknown> {
   public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
     const index = this.#DB.findIndex((value) => value.name === IDName.toString() || value.id === IDName)
 
-    interface key extends DataBase {
+    interface key extends DataBase<DataType> {
       data: DataType;
     }
     if (index > -1) {
@@ -139,7 +139,7 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async setValue(name: string, options: SetValueOptions): Promise<void>;
+  public async setValue(name: string, options: SetValueOptions<any>): Promise<void>;
 
   /**
   set the value of an entry via a name or id
@@ -148,19 +148,19 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async setValue(id: number, options: ChangeValueOptions): Promise<void>;
+  public async setValue(id: number, options: ChangeValueOptions<any>): Promise<void>;
 
   // deno-fmt-ignore
-  public async setValue(IDName: number | string, options: SetValueOptions): Promise<void> {
+  public async setValue(IDName: number | string, options: SetValueOptions<any>): Promise<void> {
     let index = -1;
     index = this.#DB.findIndex((value) => value.id === IDName || (options.exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
       if (typeof this.#DB[index].data === "object") {
         if (options.key) {
-          if (typeof this.#DB[index].data[options.key] !== "undefined") {
-            this.#DB[index].data[options.key] = options.newValue;
+          if (typeof (this.#DB[index].data as any)[options.key] !== "undefined") {
+            (this.#DB[index].data as any)[options.key] = options.newValue;
           } else {
-            throw new InvalidKeyError(options.key, this.#DB[index].data);
+            throw new InvalidKeyError(options.key, this.name ?? "no name db");
           }
         } else {
           throw new KeyUndefinedError();
@@ -168,7 +168,7 @@ export class Stowrage<DataType extends unknown> {
       } else if (typeof this.#DB[index].data !== "undefined") {
         this.#DB[index].data = options.newValue;
       }
-    await this.saveToDisk();
+      await this.saveToDisk();
     } else {
       throw (typeof IDName === "string") ? new NameNotFoundError(IDName) : new IDNotFoundError(IDName);
     }
@@ -195,13 +195,13 @@ export class Stowrage<DataType extends unknown> {
     );
     if (index > -1) {
       if (key) {
-        if (typeof this.#DB[index].data[key] === "number") {
-          this.#DB[index].data[key]++;
-        } else if (typeof this.#DB[index].data[key] === "undefined") {
-          throw new InvalidKeyError(key, this.#DB[index].data);
+        if (typeof (this.#DB[index].data as any)[key] === "number") {
+          ((this.#DB[index].data as any)[key] as number)++;
+        } else if (typeof ((this.#DB[index].data as any)[key]) === "undefined") {
+          throw new InvalidKeyError(key, this.name ?? "`no name table`");
         }
       } else if (typeof this.#DB[index].data === "number") {
-        this.#DB[index].data++;
+        (this.#DB[index].data as any)++;
       } else {
         throw new ValueIsNotNumber(this.#DB[index].data);
       }
@@ -219,7 +219,7 @@ export class Stowrage<DataType extends unknown> {
   @param { number } id - ID of the entry you want to fetch
   @returns { DataBase | undefined } return's the entry or undefined if not found
   */
-  public async fetch(id: number): Promise<DataBase | undefined>;
+  public async fetch(id: number): Promise<DataBase<DataType> | undefined>;
 
   /**
   Fetch entry by name
@@ -229,14 +229,14 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async fetch(name: string, exactMatch?: boolean): Promise<DataBase | undefined>;
+  public async fetch(name: string, exactMatch?: boolean): Promise<DataBase<DataType> | undefined>;
 
   // deno-fmt-ignore
-  public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase | undefined> {
+  public async fetch(IDName: number | string, exactMatch?: boolean): Promise<DataBase<DataType> | undefined> {
     let index = -1;
-      index = await new Promise<number>((resolve) => {
-        resolve(this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString())));
-      });
+    index = await new Promise<number>((resolve) => {
+      resolve(this.#DB.findIndex((value) => value.id === IDName || (exactMatch && value.name === IDName) || value.name.includes(IDName.toString())));
+    });
     return this.#DB[index];
   }
 
@@ -248,9 +248,9 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async fetchByRange(begin: number, length: number): Promise<DataBase[]> {
+  public async fetchByRange(begin: number, length: number): Promise<DataBase<DataType>[]> {
     if (length === this.#DB.length) return this.#DB;
-    const data: DataBase[] = await new Promise<DataBase[]>((resolve) =>
+    const data: DataBase<DataType>[] = await new Promise<DataBase<DataType>[]>((resolve) =>
       resolve(
         this.#DB.filter((value) =>
           value.id >= begin && value.id < (begin + length)
@@ -302,7 +302,7 @@ export class Stowrage<DataType extends unknown> {
   @param { FilterFunc } filter- Custom filter you want to use
   @returns { Promise<DataBase[]> } return's an array of the matching entries
   */
-  public async filter(filter: FilterFunc): Promise<DataBase[]> {
+  public async filter(filter: FilterFunc<DataType>): Promise<DataBase<DataType>[]> {
     return await new Promise((resolve) => resolve(this.#DB.filter(filter)));
   }
 
@@ -311,7 +311,7 @@ export class Stowrage<DataType extends unknown> {
   @param { FilterFunc } filter - Custom filter you want to use
   @returns { Promise<DataBase | undefined> } return's the first match of the entry
   */
-  public async find(filter: FilterFunc): Promise<DataBase | undefined> {
+  public async find(filter: FilterFunc<DataType>): Promise<DataBase<DataType> | undefined> {
     return await new Promise((resolve) => resolve(this.#DB.find(filter)));
   }
 
@@ -358,7 +358,7 @@ export class Stowrage<DataType extends unknown> {
       this.#DB.splice(0, 1);
     }
     if (this.name && this.saveLocation) {
-      await save<DataBase>(this.name, this.saveLocation, this.#DB);
+      await save<DataBase<DataType>>(this.name, this.saveLocation, this.#DB);
     }
     return;
   }
@@ -366,8 +366,8 @@ export class Stowrage<DataType extends unknown> {
   /**
   generate Entry OBJ & return it
   */
-  private async generateEntry(name: string, data: DataType): Promise<DataBase> {
-    interface key extends DataBase {
+  private async generateEntry(name: string, data: DataType): Promise<DataBase<DataType>> {
+    interface key extends DataBase<DataType> {
       data: DataType;
     }
     const prom: Promise<void> = new Promise<void>((resolve) => {
