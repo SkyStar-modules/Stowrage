@@ -143,7 +143,7 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async setValue(name: string, options: SetValueOptions<DataType>): Promise<void>;
+  public async setValue(name: string, options: SetValueOptions<unknown>): Promise<void>;
 
   /**
   set the value of an entry via a name or id
@@ -152,10 +152,10 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async setValue(id: number, options: ChangeValueOptions<DataType>): Promise<void>;
+  public async setValue(id: number, options: ChangeValueOptions<unknown>): Promise<void>;
 
   // deno-fmt-ignore
-  public async setValue(IDName: number | string, options: SetValueOptions<DataType>): Promise<void> {
+  public async setValue(IDName: number | string, options: SetValueOptions<unknown>): Promise<void> {
     let index = -1;
     index = this.#DB.findIndex((value) => value.id === IDName || (options.exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
@@ -170,7 +170,7 @@ export class Stowrage<DataType extends unknown> {
           throw new KeyUndefinedError();
         }
       } else if (typeof this.#DB[index].data !== "undefined") {
-        this.#DB[index].data = options.newValue;
+        (this.#DB[index].data as unknown) = options.newValue;
       }
       await this.saveToDisk();
     } else {
