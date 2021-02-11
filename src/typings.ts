@@ -1,8 +1,8 @@
 // deno-lint-ignore-file
-export interface DataBase {
+export interface DataBase<T> {
   id: number;
   name: string;
-  data: any;
+  data: T;
 }
 
 export interface StowrageOptions {
@@ -11,16 +11,16 @@ export interface StowrageOptions {
   maxEntries?: number;
 }
 
-export interface ChangeValueOptions {
-  newValue: unknown;
+export interface ChangeValueOptions<T> {
+  newValue: T;
   key?: string;
 }
 
-export interface SetValueOptions extends ChangeValueOptions {
+export interface SetValueOptions<T> extends ChangeValueOptions<T> {
   exactMatch?: boolean;
 }
 
-export interface FilterFunc {
-  (value: DataBase, index: number, array: DataBase[]): any;
+export interface FilterFunc<T> {
+  (value: DataBase<T>, index: number, array: DataBase<T>[]): any;
   thisArg?: any;
 }
