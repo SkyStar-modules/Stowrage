@@ -25,6 +25,9 @@ import { load, save } from "./save.ts";
 // Import filesystem features
 import { pathExist, pathExistSync } from "./filesystem.ts";
 
+// Storage url
+const stowrageURL = new URL("../stowrage", import.meta.url);
+
 /**
 * stowrage class
 @property { string | undefined } saveLocation - path where persistent data will be stored
@@ -49,7 +52,6 @@ export class Stowrage<DataType extends unknown> {
         import.meta.url,
       )
       : undefined;
-    const stowrageURL = new URL("../stowrage", import.meta.url);
     if (!pathExistSync(stowrageURL)) Deno.mkdirSync(stowrageURL);
     return;
   }
@@ -59,7 +61,6 @@ export class Stowrage<DataType extends unknown> {
   */
   public async init(): Promise<void> {
     if (this.name && this.saveLocation) {
-      const stowrageURL = new URL("../stowrage", import.meta.url);
       if (!await pathExist(stowrageURL)) await Deno.mkdir(stowrageURL);
       if (await pathExist(this.saveLocation)) {
         this.#DB = await load<DataBase<DataType>>(this.name, this.saveLocation);
@@ -73,7 +74,7 @@ export class Stowrage<DataType extends unknown> {
   * Add an entry to stowrage and return it
   @param { string } name - The name of the data you want
   @param { DataType } data - The item you want to store
-  @returns { DataType } return's the same data as you stored
+  @returns { Promise<DataBase<DataType>> } return's the same data as you stored
   */
   public async ensure(name: string, data: DataType): Promise<DataBase<DataType>> {
     return await this.generateEntry(name, data);
@@ -93,8 +94,8 @@ export class Stowrage<DataType extends unknown> {
   * Override an entry in the stowrage
   * NOTE: the override will keep the id
   @param { number } id - The id of the entry to override
-  @param { string } newName - The new name for the entry
   @param { DataType } data - The item you want to store
+  @param { string } newName - The new name for the entry
   */
 
   // deno-fmt-ignore
@@ -104,8 +105,8 @@ export class Stowrage<DataType extends unknown> {
   Override an entry in the stowrage
   NOTE: the override will keep the id
   @param { string } searchName - The name of the entry to override
-  @param { string } newName - The new name for the entry
   @param { DataType } data - The item you want to store
+  @param { string } newName - The new name for the entry
   */
 
   // deno-fmt-ignore
@@ -113,7 +114,7 @@ export class Stowrage<DataType extends unknown> {
 
   // deno-fmt-ignore
   public async override(IDName: number | string, data: DataType, newName?: string): Promise<void> {
-    const index = this.#DB.findIndex((value) => value.name === IDName.toString() || value.id === IDName)
+    const index = this.#DB.findIndex((value) => value.name === IDName.toString() || value.id === IDName);
 
     interface key extends DataBase<DataType> {
       data: DataType;
@@ -135,11 +136,11 @@ export class Stowrage<DataType extends unknown> {
   /**
   set the value of an entry via a name or id
   @param { string } name - Name of the entry to search for
-  @param { SetValueOptions } extraOptions - Extra options
+  @param { SetValueOptions } options - Extra options
   */
 
   // deno-fmt-ignore
-  public async setValue(name: string, options: SetValueOptions<any>): Promise<void>;
+  public async setValue(name: string, options: SetValueOptions<DataType>): Promise<void>;
 
   /**
   set the value of an entry via a name or id
@@ -148,10 +149,10 @@ export class Stowrage<DataType extends unknown> {
   */
 
   // deno-fmt-ignore
-  public async setValue(id: number, options: ChangeValueOptions<any>): Promise<void>;
+  public async setValue(id: number, options: ChangeValueOptions<DataType>): Promise<void>;
 
   // deno-fmt-ignore
-  public async setValue(IDName: number | string, options: SetValueOptions<any>): Promise<void> {
+  public async setValue(IDName: number | string, options: SetValueOptions<DataType>): Promise<void> {
     let index = -1;
     index = this.#DB.findIndex((value) => value.id === IDName || (options.exactMatch && value.name === IDName) || value.name.includes(IDName.toString()));
     if (index > -1) {
@@ -201,7 +202,7 @@ export class Stowrage<DataType extends unknown> {
           throw new InvalidKeyError(key, this.name ?? "`no name table`");
         }
       } else if (typeof this.#DB[index].data === "number") {
-        (this.#DB[index].data as any)++;
+        (this.#DB[index].data as number)++;
       } else {
         throw new ValueIsNotNumber(this.#DB[index].data);
       }
@@ -217,7 +218,7 @@ export class Stowrage<DataType extends unknown> {
   /**
   Fetch entry by ID
   @param { number } id - ID of the entry you want to fetch
-  @returns { DataBase | undefined } return's the entry or undefined if not found
+  @returns { Promise<DataBase<DataType> | undefined> } return's the entry or undefined if not found
   */
   public async fetch(id: number): Promise<DataBase<DataType> | undefined>;
 
@@ -225,7 +226,7 @@ export class Stowrage<DataType extends unknown> {
   Fetch entry by name
   @param { string } name - Name of the entry you want to fetch
   @param { boolean } exactMatch - optional: allow the search to be an exact match
-  @returns { DataBase | undefined } return's the entry or undefined if not found
+  @returns { Promise<DataBase<DataType> | undefined> } return's the entry or undefined if not found
   */
 
   // deno-fmt-ignore
@@ -244,7 +245,7 @@ export class Stowrage<DataType extends unknown> {
   Fetch all entries by a range of id's
   @param { number } begin - The first ID to fetch
   @param { number } length - Length of the list
-  @returns { Promise<DataBase[]> } Returns an array with all entries found, return empty array if no entries were found
+  @returns { Promise<DataBase<DataType>[]> } Returns an array with all entries found, return empty array if no entries were found
   */
 
   // deno-fmt-ignore
@@ -300,7 +301,7 @@ export class Stowrage<DataType extends unknown> {
   /**
   Filter through stowrage
   @param { FilterFunc } filter- Custom filter you want to use
-  @returns { Promise<DataBase[]> } return's an array of the matching entries
+  @returns { Promise<DataBase<DataType>[]> } return's an array of the matching entries
   */
   public async filter(filter: FilterFunc<DataType>): Promise<DataBase<DataType>[]> {
     return await new Promise((resolve) => resolve(this.#DB.filter(filter)));
@@ -309,7 +310,7 @@ export class Stowrage<DataType extends unknown> {
   /**
   Find the first entry with your specific filter
   @param { FilterFunc } filter - Custom filter you want to use
-  @returns { Promise<DataBase | undefined> } return's the first match of the entry
+  @returns { Promise<DataBase<DataType> | undefined> } return's the first match of the entry
   */
   public async find(filter: FilterFunc<DataType>): Promise<DataBase<DataType> | undefined> {
     return await new Promise((resolve) => resolve(this.#DB.find(filter)));
