@@ -40,6 +40,7 @@ export class Stowrage<DataType extends unknown> {
   public maxEntries: number | undefined;
   public saveLocation: URL | undefined;
   public name: string | undefined;
+
   /**
   @param { StowrageOptions } options - all start options for stowrage
   */
@@ -76,6 +77,8 @@ export class Stowrage<DataType extends unknown> {
   @param { DataType } data - The item you want to store
   @returns { Promise<DataBase<DataType>> } return's the same data as you stored
   */
+
+  // deno-fmt-ignore
   public async ensure(name: string, data: DataType): Promise<DataBase<DataType>> {
     return await this.generateEntry(name, data);
   }
@@ -189,6 +192,7 @@ export class Stowrage<DataType extends unknown> {
   @param { string } key - The key you want to increment the value of
   */
   public async incValue(id: number, key?: string): Promise<void>;
+
   public async incValue(IDName: number | string, key?: string): Promise<void> {
     let index = -1;
     index = this.#DB.findIndex((value) =>
@@ -198,7 +202,9 @@ export class Stowrage<DataType extends unknown> {
       if (key) {
         if (typeof (this.#DB[index].data as any)[key] === "number") {
           ((this.#DB[index].data as any)[key] as number)++;
-        } else if (typeof ((this.#DB[index].data as any)[key]) === "undefined") {
+        } else if (
+          typeof ((this.#DB[index].data as any)[key]) === "undefined"
+        ) {
           throw new InvalidKeyError(key, this.name ?? "`no name table`");
         }
       } else if (typeof this.#DB[index].data === "number") {
@@ -303,6 +309,8 @@ export class Stowrage<DataType extends unknown> {
   @param { FilterFunc } filter- Custom filter you want to use
   @returns { Promise<DataBase<DataType>[]> } return's an array of the matching entries
   */
+
+  // deno-fmt-ignore
   public async filter(filter: FilterFunc<DataType>): Promise<DataBase<DataType>[]> {
     return await new Promise((resolve) => resolve(this.#DB.filter(filter)));
   }
@@ -312,6 +320,8 @@ export class Stowrage<DataType extends unknown> {
   @param { FilterFunc } filter - Custom filter you want to use
   @returns { Promise<DataBase<DataType> | undefined> } return's the first match of the entry
   */
+
+  // deno-fmt-ignore
   public async find(filter: FilterFunc<DataType>): Promise<DataBase<DataType> | undefined> {
     return await new Promise((resolve) => resolve(this.#DB.find(filter)));
   }
@@ -367,6 +377,8 @@ export class Stowrage<DataType extends unknown> {
   /**
   generate Entry OBJ & return it
   */
+
+  // deno-fmt-ignore
   private async generateEntry(name: string, data: DataType): Promise<DataBase<DataType>> {
     interface key extends DataBase<DataType> {
       data: DataType;
