@@ -39,3 +39,4 @@ The [dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev) wi
 ## Authors & Acknowledgments
 
 - [Skyler "MierenMans" van Boheemen](https://github.com/MierenManz) - Author
+- [TheForgottenOne](https://github.com/ZiomaleQ) - Added types
