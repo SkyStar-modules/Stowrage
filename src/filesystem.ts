@@ -1,4 +1,4 @@
-export function pathExistSync(path: URL): boolean {
+export function pathExistSync(path: string): boolean {
   try {
     Deno.statSync(path);
     return true;
@@ -10,7 +10,7 @@ export function pathExistSync(path: URL): boolean {
   }
 }
 
-export async function pathExist(path: URL): Promise<boolean> {
+export async function pathExist(path: string): Promise<boolean> {
   try {
     await Deno.stat(path);
     return true;

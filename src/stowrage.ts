@@ -26,7 +26,7 @@ import { load, save } from "./save.ts";
 import { pathExist, pathExistSync } from "./filesystem.ts";
 
 // Storage url
-const stowrageURL = new URL("../stowrage", import.meta.url);
+const stowrageURL = Deno.cwd() + "/stowrage";
 
 /**
 * stowrage class
@@ -37,8 +37,8 @@ const stowrageURL = new URL("../stowrage", import.meta.url);
 export class Stowrage<DataType extends unknown> {
   #DB: DataBase<DataType>[] = [];
   #id = 0;
-  public maxEntries: number | undefined;
-  public saveLocation: URL | undefined;
+  public maxEntries: number | undefined
+  public saveLocation: string | undefined;
   public name: string | undefined;
 
   /**
@@ -48,10 +48,8 @@ export class Stowrage<DataType extends unknown> {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
     this.saveLocation = (options?.saveToDisk && this.name)
-      ? new URL(
-        "../stowrage/" + this.name.toLowerCase() + ".stow",
-        import.meta.url,
-      )
+      ?
+        stowrageURL + "/" + this.name.toLowerCase() + ".stow"
       : undefined;
     if (!pathExistSync(stowrageURL)) Deno.mkdirSync(stowrageURL);
     return;
