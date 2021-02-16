@@ -92,11 +92,13 @@ export class Stowrage<DataType extends unknown> extends Map<string, DataBase<Dat
     return;
   }
 
-  public fetchByRange(start: number, length: number): Map<string, DataBase<DataType>> {
-    const temp = new Map<string, DataBase<DataType>>();
-    for (let i = start; i < start + length; i++) {
-      const data = this.fetchByID(i);
-      if (data) temp.set(data.name, data);
+  public fetchByRange(start: number, length: number): DataBase<DataType>[] {
+    if (start + length >= super.size) return Array.from(super.values());
+    const temp:DataBase<DataType>[] = [];
+    for (const data of super.values()) {
+      if (data.id > start + length) break;
+      if (data.id < start) continue;
+      temp.push(data);
     }
     return temp;
   }

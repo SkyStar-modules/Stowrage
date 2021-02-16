@@ -21,7 +21,9 @@ const obj: OBJ = {
         avg: []
     }
 }
-for (let i = 10; i <= 10000; i += 10) {
+const newO = obj.new;
+const oldO = obj.old;
+for (let i = 100; i <= 10000; i += 100) {
   const newV = new Stowrage();
   const oldV = new oldStowrage();
   const newBegin = performance.now();
@@ -29,19 +31,17 @@ for (let i = 10; i <= 10000; i += 10) {
     newV.ensure(j + "new", j);
   }
   const newEnd = performance.now();
-    obj.new.entries.push(newV.size);
-    obj.new.totalTime.push(newEnd - newBegin);
-    obj.new.avg.push((newEnd - newBegin) / i);
-
+  newO.entries.push(newV.size);
+  newO.totalTime.push(newEnd - newBegin);
+  newO.avg.push((newEnd - newBegin) / i);
 
   const oldBegin = performance.now();
   for (let j = 0; j < i; j++) {
     await oldV.ensure(j + "old", j);
   }
   const oldEnd = performance.now();
-    obj.old.entries.push(oldV.totalEntries());
-    obj.old.totalTime.push(oldEnd - oldBegin);
-    obj.old.avg.push((oldEnd - oldBegin) / i);
-
+  oldO.entries.push(oldV.totalEntries());
+  oldO.totalTime.push(oldEnd - oldBegin);
+  oldO.avg.push((oldEnd - oldBegin) / i);
 }
-Deno.writeTextFile("data.json", JSON.stringify(obj));
+await Deno.writeTextFile("data.json", JSON.stringify(obj));
