@@ -50,13 +50,3 @@ export class KeyUndefinedError extends Error {
     this.message = `data is an object, but key was undefined`;
   }
 }
-
-export class ValueIsNotNumber extends Error {
-  public name = "\u001b[31;1mVALUE TYPE IS NOT A NUMBER\u001b[0m";
-  public message: string;
-
-  public constructor(key: unknown) {
-    super();
-    this.message = `${key} is not a number but ${typeof key}`;
-  }
-}

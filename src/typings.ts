@@ -2,7 +2,7 @@
 export interface DataBase<T> {
   id: number;
   name: string;
-  data: T|Record<string, unknown>|unknown;
+  data: T | Record<string, unknown> | unknown;
 }
 
 export interface StowrageOptions {
@@ -14,10 +14,6 @@ export interface StowrageOptions {
 export interface ChangeValueOptions<T> {
   value: T;
   key?: string;
-}
-
-export interface SetValueOptions<T> extends ChangeValueOptions<T> {
-  exactMatch?: boolean;
 }
 
 export interface FilterFunc<T> {
