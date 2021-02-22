@@ -2,17 +2,17 @@
 export interface DataBase<T> {
   id: number;
   name: string;
-  data: T;
+  data: T|Record<string, unknown>|unknown;
 }
 
 export interface StowrageOptions {
-  saveToDisk?: boolean;
+  isPersistent?: boolean;
   name?: string;
   maxEntries?: number;
 }
 
 export interface ChangeValueOptions<T> {
-  newValue: T;
+  value: T;
   key?: string;
 }
 
