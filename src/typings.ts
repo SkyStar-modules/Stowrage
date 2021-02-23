@@ -1,4 +1,3 @@
-// deno-lint-ignore-file
 export interface DataBase<T> {
   id: number;
   name: string;
@@ -17,6 +16,6 @@ export interface ChangeValueOptions<T> {
 }
 
 export interface FilterFunc<T> {
-  (value: DataBase<T>, index: number, array: DataBase<T>[]): any;
+  (value: DataBase<T>, index: number, array: DataBase<T>[]): unknown;
   thisArg?: this;
 }
