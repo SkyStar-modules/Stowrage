@@ -6,10 +6,6 @@ jobs:
   lint:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        deno: [v1.x]
-
     steps:
       - name: Setup repo
         uses: actions/checkout@v2

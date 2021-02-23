@@ -6,10 +6,6 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        deno: ['v1.x']
-
     steps:
       - name: Setup repo
         uses: actions/checkout@v2
@@ -17,7 +13,7 @@ jobs:
       - name: Setup Deno
         uses: denolib/setup-deno@v2.3.0
         with:
-          deno-version: ${{ matrix.deno }}
+          deno-version: v1.x
       
       - name: Run Formatting
         run: deno fmt src
