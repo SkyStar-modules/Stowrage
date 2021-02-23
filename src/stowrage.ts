@@ -4,6 +4,7 @@ import {
   KeyUndefinedError,
   NameDuplicationError,
   NameNotFoundError,
+  nonPersistentError
 } from "./error.ts";
 
 import * as fs from "./filesystem.ts";
@@ -17,10 +18,13 @@ import {
 } from "./typings.ts";
 
 import { DB } from "../deps.ts";
+
 /**
 * stowrage class
-@property { string | undefined } name - name of the Stowrage
 @property { number | undefined } maxEntries - max Entries in the Stowrage
+@property { string | undefined } name - name of the Stowrage
+@property { string } path - Directory for persistent data
+@property { boolean | undefined } isPersistent - Enable or disable persistent storage
 */
 export class Stowrage<DataType extends unknown> {
   #id = 0;
@@ -30,8 +34,8 @@ export class Stowrage<DataType extends unknown> {
   public maxEntries: number | undefined;
   public name: string | undefined;
   public path = "./stowrage/";
-  public fileLocation: string | undefined;
   public isPersistent: boolean | undefined = false;
+
   /**
   @param { StowrageOptions } options - all start options for stowrage
   */
@@ -42,6 +46,11 @@ export class Stowrage<DataType extends unknown> {
     if (this.name && !fs.pathExistSync(this.path)) Deno.mkdirSync(this.path);
     return;
   }
+
+  /**
+  Initiate persistent storage
+  Throw's when `isPersistent` = false
+  */
   public async init(): Promise<void> {
     if (this.name && this.isPersistent) {
       this.#SQLDB = new DB(this.path + this.name + ".db");
@@ -49,15 +58,14 @@ export class Stowrage<DataType extends unknown> {
         "CREATE TABLE IF NOT EXISTS stowrage (id INTEGER, name TEXT, data TEXT )",
       );
       for await (
-        const [id, name, data] of this.#SQLDB.query("SELECT * FROM stowrage")
+        const [name, data] of this.#SQLDB.query("SELECT name, data FROM stowrage")
       ) {
         this.add(name, JSON.parse(data));
       }
-    } else {
-      throw "Do not use init() if you don't have persistent data or a name selected!";
-    }
+    } else throw new nonPersistentError(this.name ?? "unnamed db", "initiated");
     return;
   }
+
   public ensure(name: string, key: DataType): DataBase<DataType> {
     if (this.#DB.has(name)) throw new NameDuplicationError(name);
     const entry = this.generateEntry(name, key);
@@ -90,6 +98,7 @@ export class Stowrage<DataType extends unknown> {
     }
     return;
   }
+
   public deleteByID(id: number): void {
     const name = this.#IDMap.get(id);
     if (!name) throw new IDNotFoundError(id);
@@ -106,6 +115,7 @@ export class Stowrage<DataType extends unknown> {
     if (range >= this.#DB.size) {
       this.#DB.clear();
       this.#IDMap.clear();
+      this.#id = 0;
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query("DELETE FROM stowrage");
       }
@@ -123,7 +133,7 @@ export class Stowrage<DataType extends unknown> {
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query("DELETE FROM stowrage WHERE id BETWEEN ? AND ?", [
           start,
-          start + length,
+          range,
         ]);
       }
     }
@@ -156,25 +166,28 @@ export class Stowrage<DataType extends unknown> {
   public filter(func: FilterFunc<DataType>): DataBase<DataType>[] {
     return [...this.#DB.values()].filter(func);
   }
+
   public find(func: FilterFunc<DataType>): DataBase<DataType> | undefined {
     return [...this.#DB.values()].find(func);
   }
+
   public fetch(name: string): DataBase<DataType> {
     const data = this.#DB.get(name);
-    if (data) return data;
-    throw new NameNotFoundError(name);
+    if (!data) throw new NameNotFoundError(name);
+    else return data;
   }
 
   public fetchByID(id: number): DataBase<DataType> {
     const name: string | undefined = this.#IDMap.get(id);
     if (!name) throw new IDNotFoundError(id);
-    return this.#DB.get(name)!;
+    else return this.#DB.get(name)!;
   }
 
   public fetchByRange(start: number, length: number): DataBase<DataType>[] {
-    if (start + length >= this.#DB.size) return [...this.#DB.values()];
+    const range = start + length;
+    if (range >= this.#DB.size) return [...this.#DB.values()];
     return [...this.#DB.values()].filter((data) =>
-      data.id >= start && data.id < start + length
+      data.id >= start && data.id < range
     );
   }
 
@@ -205,6 +218,7 @@ export class Stowrage<DataType extends unknown> {
     this.override(nameID, entry!.data as DataType);
     return;
   }
+
   public has(name: string): boolean {
     return this.#DB.has(name);
   }
@@ -219,10 +233,12 @@ export class Stowrage<DataType extends unknown> {
     return;
   }
 
-  public close(): void {
-    if (this.#SQLDB) this.#SQLDB.close();
+  public async close(): Promise<void> {
+    if (!this.#SQLDB) throw new nonPersistentError(this.name ?? "unnamed db", "closed");
+    await this.#SQLDB.close();
     return;
   }
+
   public totalEntries(): number {
     return this.#DB.size;
   }

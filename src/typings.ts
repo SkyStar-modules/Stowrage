@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 export interface DataBase<T> {
   id: number;
   name: string;

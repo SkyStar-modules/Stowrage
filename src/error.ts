@@ -45,3 +45,13 @@ export class KeyUndefinedError extends Error {
   public name = "\u001b[31;1mUNDEFINED KEY\u001b[0m";
   public message = "data is an object, but key was undefined";
 }
+
+export class nonPersistentError extends Error {
+  public name = "\u001b[31;1mDB IS NON-PERSISTENT\u001b[0m";
+  public message: string;
+
+  public constructor(name: string, state: string) {
+    super();
+    this.message = `stowrage ${name} got ${state}, but ${name} is non-persistent`;
+  }
+}
