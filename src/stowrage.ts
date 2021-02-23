@@ -29,7 +29,7 @@ export class Stowrage<DataType extends unknown> {
   #DB = new Map<string, DataBase<DataType>>();
   public maxEntries: number | undefined;
   public name: string | undefined;
-  public path = "./stowrage";
+  public path = "./stowrage/";
   public fileLocation: string | undefined;
   public isPersistent: boolean | undefined = false;
   /**
@@ -44,13 +44,14 @@ export class Stowrage<DataType extends unknown> {
   }
   public async init(): Promise<void> {
     if (this.name && this.isPersistent) {
-      this.#SQLDB = new DB(this.name + ".db");
+      this.#SQLDB = new DB(this.path + this.name + ".db");
       this.#SQLDB.query(
         "CREATE TABLE IF NOT EXISTS stowrage (id INTEGER, name TEXT, data TEXT )",
       );
-      for await (const entry of this.#SQLDB.query("SELECT * FROM stowrage")) {
-        this.#IDMap.set(entry.id, entry.name);
-        this.#DB.set(entry.name, JSON.parse(entry.data));
+      for await (
+        const [id, name, data] of this.#SQLDB.query("SELECT * FROM stowrage")
+      ) {
+        this.add(name, JSON.parse(data));
       }
     } else {
       throw "Do not use init() if you don't have persistent data or a name selected!";
@@ -106,10 +107,7 @@ export class Stowrage<DataType extends unknown> {
       this.#DB.clear();
       this.#IDMap.clear();
       if (this.#SQLDB && this.isPersistent) {
-        this.#SQLDB.query("DROP TABLE stowrage");
-        this.#SQLDB.query(
-          "CREATE TABLE stowrage (id INTEGER, name TEXT, data TEXT)",
-        );
+        this.#SQLDB.query("DELETE FROM stowrage");
       }
     } else {
       this.#DB = new Map(
@@ -158,7 +156,9 @@ export class Stowrage<DataType extends unknown> {
   public filter(func: FilterFunc<DataType>): DataBase<DataType>[] {
     return [...this.#DB.values()].filter(func);
   }
-
+  public find(func: FilterFunc<DataType>): DataBase<DataType> | undefined {
+    return [...this.#DB.values()].find(func);
+  }
   public fetch(name: string): DataBase<DataType> {
     const data = this.#DB.get(name);
     if (data) return data;
@@ -198,14 +198,31 @@ export class Stowrage<DataType extends unknown> {
       ) {
         throw new InvalidKeyError(options.key, this.name ?? "unnamed db");
       }
-      (entry!.data as Record<string, DataType>)[options.key];
+      (entry!.data as Record<string, unknown>)[options.key] = options.value;
     } else {
       (entry!.data as unknown) = options.value;
     }
     this.override(nameID, entry!.data as DataType);
     return;
   }
+  public has(name: string): boolean {
+    return this.#DB.has(name);
+  }
 
+  public deleteStowrage(): void {
+    this.#DB.clear();
+    this.#IDMap.clear();
+    this.#id = 0;
+    if (this.isPersistent && this.#SQLDB) {
+      this.#SQLDB.query("DELETE FROM stowrage");
+    }
+    return;
+  }
+
+  public close(): void {
+    if (this.#SQLDB) this.#SQLDB.close();
+    return;
+  }
   public totalEntries(): number {
     return this.#DB.size;
   }

@@ -1,8 +1,7 @@
-// deno-lint-ignore-file
 export interface DataBase<T> {
   id: number;
   name: string;
-  data: T | Record<string, unknown> | unknown;
+  data: T | Record<string, unknown>;
 }
 
 export interface StowrageOptions {
@@ -17,6 +16,6 @@ export interface ChangeValueOptions<T> {
 }
 
 export interface FilterFunc<T> {
-  (value: DataBase<T>, index: number, array: DataBase<T>[]): any;
-  thisArg?: any;
+  (value: DataBase<T>, index: number, array: DataBase<T>[]): DataBase<T>[];
+  thisArg?: this;
 }
