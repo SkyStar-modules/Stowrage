@@ -1,9 +1,2 @@
 .vscode
-tests
 stowrage
-*.json
-*.ejs
-*.html
-test.ts
-bench.ts
-graph.ts
