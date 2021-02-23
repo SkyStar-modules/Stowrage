@@ -16,6 +16,6 @@ export interface ChangeValueOptions<T> {
 }
 
 export interface FilterFunc<T> {
-  (value: DataBase<T>, index: number, array: DataBase<T>[]): DataBase<T>[];
+  (value: DataBase<T>, index: number, array: DataBase<T>[]): any;
   thisArg?: this;
 }
