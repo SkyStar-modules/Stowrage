@@ -1,6 +1,6 @@
 name: github lint
 
-on: [dev, main]
+on: [push, pull_request]
 
 jobs:
   lint:

@@ -1,6 +1,6 @@
 name: github test
 
-on: [dev, main]
+on: [push, pull_request]
 
 jobs:
   test:

@@ -1,6 +1,6 @@
 name: github fmt
 
-on: [dev, main]
+on: [push, pull_request]
 
 jobs:
   fmt:
