@@ -40,3 +40,8 @@ The [dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev) wi
 
 - [Skyler "MierenMans" van Boheemen](https://github.com/MierenManz) - Author
 - [TheForgottenOne](https://github.com/ZiomaleQ) - Added types
+
+## Contributing
+
+if you want to contribute you can always make an [issue](https://github.com/SkyStar-modules/Stowrage/issues) or [PR](https://github.com/SkyStar-modules/Stowrage/pulls)).  
+[click here for more info](CONTRIBUTING.md)
