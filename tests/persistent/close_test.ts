@@ -1,5 +1,4 @@
 import { Stowrage } from "../../mod.ts";
-import { assertEquals } from "../devdeps.ts";
 
 Deno.test({
   name: "close",
