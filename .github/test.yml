@@ -1,10 +1,6 @@
-name: github test's
+name: github test
 
-on:
-  push:
-    branches: [dev]
-  pull_request:
-    branches: [main, dev]
+on: [dev, main]
 
 jobs:
   test:
@@ -12,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        deno: ['v1.x', 'nightly']
+        deno: ['v1.6.0','v1.x', 'nightly']
 
     steps:
       - name: Setup repo
@@ -24,10 +20,4 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno test -A tests/non-persistent
-
-      - name: Run fmt
-        run: deno fmt src
-      
-      - name: Run lint
-        run: deno lint --unstable src
+        run: deno test -A --unstable tests/non-persistent
