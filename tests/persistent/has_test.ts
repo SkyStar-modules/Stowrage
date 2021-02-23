@@ -1,17 +1,18 @@
 import { Stowrage } from "../../mod.ts";
 
-const data = new Stowrage<string>({
-  name: "has",
-  isPersistent: true,
-});
-
-await data.init();
-
 Deno.test({
   name: "has Save",
-  fn: () => {
+  fn: async() => {
+    const data = new Stowrage<string>({
+      name: "has",
+      isPersistent: true,
+    });
+    
+    await data.init();
+        
     data.add("coolEntry", "string");
     if (!data.has("coolEntry")) throw "Cool entry not found";
+    data.close();
   },
   sanitizeOps: true,
   sanitizeResources: true,
