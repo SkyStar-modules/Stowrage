@@ -4,7 +4,7 @@ import {
   KeyUndefinedError,
   NameDuplicationError,
   NameNotFoundError,
-  nonPersistentError
+  nonPersistentError,
 } from "./error.ts";
 
 import * as fs from "./filesystem.ts";
@@ -58,7 +58,9 @@ export class Stowrage<DataType extends unknown> {
         "CREATE TABLE IF NOT EXISTS stowrage (id INTEGER, name TEXT, data TEXT )",
       );
       for await (
-        const [name, data] of this.#SQLDB.query("SELECT name, data FROM stowrage")
+        const [name, data] of this.#SQLDB.query(
+          "SELECT name, data FROM stowrage",
+        )
       ) {
         this.add(name, JSON.parse(data));
       }
@@ -233,9 +235,11 @@ export class Stowrage<DataType extends unknown> {
     return;
   }
 
-  public async close(): Promise<void> {
-    if (!this.#SQLDB) throw new nonPersistentError(this.name ?? "unnamed db", "closed");
-    await this.#SQLDB.close();
+  public close(): void {
+    if (!this.#SQLDB) {
+      throw new nonPersistentError(this.name ?? "unnamed db", "closed");
+    }
+    this.#SQLDB.close();
     return;
   }
 

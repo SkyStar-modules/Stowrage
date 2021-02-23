@@ -52,6 +52,7 @@ export class nonPersistentError extends Error {
 
   public constructor(name: string, state: string) {
     super();
-    this.message = `stowrage ${name} got ${state}, but ${name} is non-persistent`;
+    this.message =
+      `stowrage ${name} got ${state}, but ${name} is non-persistent`;
   }
 }
