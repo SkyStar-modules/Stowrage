@@ -20,4 +20,4 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno test -A --unstable tests/non-persistent
+        run: deno test -A --unstable tests
