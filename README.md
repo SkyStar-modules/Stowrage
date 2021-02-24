@@ -8,7 +8,7 @@
 ## Why use stowrage?
 
 - Easy to use
-- Fast
+- Fastest memory DB
 - Reliable
 - Good introduction to better solution's
 

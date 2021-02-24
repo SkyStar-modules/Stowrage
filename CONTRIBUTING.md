@@ -23,6 +23,7 @@ We use deno's LSP as base for code style.
 
 When submitting PR, please make the title as simple as possible.  
 Ex: `[Feature improvement]: Cache can now be loaded much faster`  
-Also, please make it understandable for someone whose English is not a primary language.
+Also, please make it understandable for someone whose English is not a primary language.  
+The PR need's atleast a test if you added a method & needs to pass `deno fmt`, `deno lint` and all tests to be able to get merged
 
 Thanks!
