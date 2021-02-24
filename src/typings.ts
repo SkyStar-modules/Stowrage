@@ -5,7 +5,7 @@ export interface DataBase<T> {
 }
 
 export interface StowrageOptions {
-  isPersistent?: boolean;
+  persistent?: boolean;
   name?: string;
   maxEntries?: number;
 }
