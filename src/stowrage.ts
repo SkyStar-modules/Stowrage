@@ -42,7 +42,7 @@ export class Stowrage<DataType = unknown> {
   public constructor(options?: StowrageOptions) {
     this.maxEntries = options?.maxEntries;
     this.name = options?.name;
-    this.isPersistent = options?.isPersistent;
+    this.isPersistent = options?.persistent;
     if (this.name && !fs.pathExistSync(this.path)) Deno.mkdirSync(this.path);
     return;
   }
