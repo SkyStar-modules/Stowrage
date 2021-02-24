@@ -1,26 +1,21 @@
-// deno-lint-ignore-file
 export interface DataBase<T> {
   id: number;
   name: string;
-  data: T;
+  data: T | Record<string, unknown>;
 }
 
 export interface StowrageOptions {
-  saveToDisk?: boolean;
+  persistent?: boolean;
   name?: string;
   maxEntries?: number;
 }
 
 export interface ChangeValueOptions<T> {
-  newValue: T;
+  value: T;
   key?: string;
 }
 
-export interface SetValueOptions<T> extends ChangeValueOptions<T> {
-  exactMatch?: boolean;
-}
-
 export interface FilterFunc<T> {
-  (value: DataBase<T>, index: number, array: DataBase<T>[]): any;
-  thisArg?: any;
+  (value: DataBase<T>, index: number, array: DataBase<T>[]): unknown;
+  thisArg?: this;
 }

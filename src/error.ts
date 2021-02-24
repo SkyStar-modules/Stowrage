@@ -21,7 +21,7 @@ export class NameNotFoundError extends Error {
 }
 
 export class IDNotFoundError extends Error {
-  public name = "\u001b[31;1mNAME DUPLICATION\u001b[0m";
+  public name = "\u001b[31;1mID NOT FOUND\u001b[0m";
   public message: string;
 
   public constructor(id: number) {
@@ -43,20 +43,16 @@ export class InvalidKeyError extends Error {
 
 export class KeyUndefinedError extends Error {
   public name = "\u001b[31;1mUNDEFINED KEY\u001b[0m";
-  public message: string;
-
-  public constructor() {
-    super();
-    this.message = `data is an object, but key was undefined`;
-  }
+  public message = "data is an object, but key was undefined";
 }
 
-export class ValueIsNotNumber extends Error {
-  public name = "\u001b[31;1mVALUE TYPE IS NOT A NUMBER\u001b[0m";
+export class nonPersistentError extends Error {
+  public name = "\u001b[31;1mDB IS NON-PERSISTENT\u001b[0m";
   public message: string;
 
-  public constructor(key: unknown) {
+  public constructor(name: string, state: string) {
     super();
-    this.message = `${key} is not a number but ${typeof key}`;
+    this.message =
+      `stowrage ${name} got ${state}, but ${name} is non-persistent`;
   }
 }
