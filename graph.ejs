@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="totalTime" width="1000" height="540"></canvas>
+    <canvas id="avg" width="1000" height="540"></canvas>
+    <script>
+        new Chart(document.getElementById("totalTime").getContext("2d"), {
+            type: 'line',
+            data: {
+                labels: [0,<%= it.entries %>],
+                datasets: [{ 
+                    data: [0,<%= it.stowrage.totalTime %>],
+                    label: "v0.4 stowrage",
+                    borderColor: "#00ff00"
+                }, { 
+                    data: [0,<%= it.keyDB.totalTime %>],
+                    label: "keyDB",
+                    borderColor: "#ff0000"
+                }, {
+                    data: [0, <%= it.SQLite.totalTime %>],
+                    label: "SQLite",
+                    borderColor: "#0000ff"
+                }, {
+                    data: [0, <%= it.oldStowrage.totalTime %>],
+                    label: "v0.3.2 stowrage",
+                    borderColor: "#ffff00"
+                }
+            ]},
+            options: {
+                elements: {
+                    point:{
+                        radius: 0
+                    }
+                },
+                title: {
+                    position: 'top',
+                    display: true,
+                    text: "total time"
+                }
+            }
+        });
+        new Chart(document.getElementById("avg").getContext("2d"), {
+            type: 'line',
+            data: {
+                labels: [0,<%= it.entries %>],
+                datasets: [{ 
+                    data: [0,<%= it.stowrage.avg %>],
+                    label: "v0.4 stowrage",
+                    borderColor: "#00ff00"
+                }, { 
+                    data: [0,<%= it.keyDB.avg %>],
+                    label: "keyDB",
+                    borderColor: "#ff0000"
+                }, {
+                    data: [0, <%= it.SQLite.avg %>],
+                    label: "SQLite",
+                    borderColor: "#0000ff"
+                }, {
+                    data: [0, <%= it.oldStowrage.avg %>],
+                    label: "v0.3.2 stowrage",
+                    borderColor: "#ffff00"
+                }
+            ]},
+            options: {
+                elements: {
+                    point:{
+                        radius: 0
+                    }
+                },
+                title: {
+                    position: 'top',
+                    display: true,
+                    text: "average time per entry"
+                }
+            }
+        });
+    </script>
+</body>
+</html>
