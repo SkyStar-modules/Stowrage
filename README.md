@@ -7,9 +7,10 @@
 
 ## Why use stowrage?
 
-- easy to use
-- fast
-- good introduction to better solution's
+- Easy to use
+- Fast
+- Reliable
+- Good introduction to better solution's
 
 ## Quick Example
 
@@ -18,7 +19,7 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage<string>({
   name: "some name", // name of the Stowrage
-  saveToDisk: true, // allow's you to save to disk
+  persistent: true, // allow's you to save to disk
   maxEntries: 5, // max entries allowed in the Stowrage, automatically discard the oldest entry
 });
 
@@ -28,13 +29,15 @@ await data.ensure("coolname", "sumstring");
 ## Documentation
 
 All the docs for stable can be found [here](https://deno.land/x/stowrage/docs/docs.md)  
+If some of the types are unclear, I highly recommend checking out [doc.deno.land](https://doc.deno.land/https/deno.land/x/stowrage/mod.ts)
 If you want doc's for the github branch, that can be found [here](https://github.com/SkyStar-modules/Stowrage/blob/main/docs/docs.md)
 
 ## Releases
 
 All stable releases will be uploaded to [/x](https://deno.land/x/stowrage).  
 The [main github branch](https://github.com/SkyStar-modules/Stowrage) will be like a beta for new features.  
-The [dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev) will be an alpha/dev built which get's alot of changes which might break and be buggy.
+The [dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev) will be an alpha/dev built which get's alot of changes which might break and be buggy.  
+The [bench-branch github branch](https://github.com/SkyStar-modules/Stowrage/tree/bench-branch) is for benchmarking the [dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev) and has some benchmark results in it
 
 ## Authors & Acknowledgments
 
