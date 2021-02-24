@@ -4,11 +4,11 @@ import { Keydb } from "https://deno.land/x/keydb@1.0.0/sqlite.ts";
 import { DB as SQLite } from "https://deno.land/x/sqlite@v2.3.2/mod.ts";
 import { render } from "https://deno.land/x/eta/mod.ts";
 
-const total = 100000;
-const step = 1000;
+const total = parseInt(Deno.args[0]);
+const step = (Deno.args[1]) ? parseInt(Deno.args[1]) : 1000;
 interface interfaceThing {
   totalTime: number[];
-  avg: number[]
+  avg: number[];
 }
 interface Thing {
   entries: number[];
@@ -21,31 +21,27 @@ const obj: Thing = {
   entries: [],
   oldStowrage: {
     totalTime: [],
-    avg: []
+    avg: [],
   },
   stowrage: {
     totalTime: [],
-    avg: []
+    avg: [],
   },
   keyDB: {
     totalTime: [],
-    avg: []
+    avg: [],
   },
   SQLite: {
     totalTime: [],
-    avg: []
-  }
-}
+    avg: [],
+  },
+};
 
 for (let i = step; i <= total; i += step) {
   console.log(i);
   obj.entries.push(i);
-  const ostow = new oldStow({
-    name: `meh`
-  });
-  const stow = new Stowrage({
-    name: `meh`,
-  });
+  const ostow = new oldStow();
+  const stow = new Stowrage();
   const keydb = new Keydb();
   const sql = new SQLite();
   sql.query("CREATE TABLE IF NOT EXISTS sql (id INTEGER, name TEXT)");
@@ -82,7 +78,7 @@ for (let i = step; i <= total; i += step) {
   // SQLite
   start = performance.now();
   for (let j = 0; j <= i; j++) {
-    await sql.query("INSERT INTO sql (name, id) VALUES(?, ?)", [`${j}`, j]);
+    sql.query("INSERT INTO sql (name, id) VALUES(?, ?)", [`${j}`, j]);
   }
   end = performance.now();
   math = end - start;
