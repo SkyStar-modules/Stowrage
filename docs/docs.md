@@ -22,7 +22,7 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage({
   name: "persistent",
-  isPersistent: true
+  persistent: true
 });
 
 await data.init();
@@ -48,7 +48,7 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage({
   name: "some name", // name of the Stowrage
-  isPersistent: true, // allow's you to save to a SQLite db
+  persistent: true, // allow's you to save to a SQLite DataBase
   maxEntries: 5, // max entries allowed in the Stowrage, automatically discard the oldest entry
 });
 ```
@@ -61,7 +61,7 @@ const data = new Stowrage({
 interface DataBase {
   id: number;
   name: string;
-  data: userDefined;
+  data: userDefinxed;
 }
 ```
 
@@ -80,9 +80,9 @@ const data = new Stowrage<string>();
 console.log(data.ensure("name", "string"));
 /** expected output:
 {
-    id: 0,
-    name: "name",
-    data: "string"
+  id: 0,
+  name: "name",
+  data: "string"
 }
 */
 ```
@@ -133,17 +133,16 @@ data.add("somename1", "string");
 console.log(data.fetchByRange(0, 2));
 /** expected output:
 [
-    {
-        id: 0,
-        name: "somename",
-        data: "string"
-    },
-    {
-        id: 1,
-        name: "somename1",
-        data: "string"
-    }
-
+  {
+    id: 0,
+    name: "somename",
+    data: "string"
+  },
+  {
+    id: 1,
+    name: "somename1",
+    data: "string"
+  }
 ]
 ```
 
@@ -162,9 +161,9 @@ data.override("name", "other string", "newname");
 console.log(data.fetch("newname"));
 /** expected output:
 {
-    id: 0,
-    name: "newname"
-    data: "other string"
+  id: 0,
+  name: "newname",
+  data: "other string"
 }
 */
 ```
@@ -216,62 +215,11 @@ console.log(data.fetch("name"));
 */
 ```
 
-### incValue(IDName: number|string, key?: string)
-
-this has the same idea as setValue but it only increments a number
-
-```ts
-import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
-
-const data = new Stowrage<Record<string, number>>();
-const obj = {
-  thing: 12,
-};
-console.log(data.ensure("name", obj));
-/** expected output: 
-{
-  thing: 12
-}
-*/
-
-data.incValue("name", "thing");
-console.log(data.fetch("name"));
-/** expected output: 
-{
-  thing: 13
-}
-*/
-```
-
-or for just numbers
-
-```ts
-import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
-
-const data = new Stowrage<number>();
-
-console.log(data.ensure("name", 17);
-/** expected output:
-{
-  id: 0,
-  name: "name",
-  data: 17
-}
-*/
-data.incValue("name");
-console.log(data.fetch("name"));
-/**
-{
-  id: 0,
-  name: "name",
-  data: 18
-}
-*/
-```
-
 ### delete(IDName: string|number)
 
-Delete 1 entry from the map via a name or id
+Delete 1 entry from the map via a name
+
+use `deleteByID()` to delete 1 entry by it's ID
 
 ```ts
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
@@ -280,8 +228,6 @@ const data = new Stowrage<string>();
 
 data.ensure("name", "string");
 
-data.delete(0);
-// these do the same thing
 data.delete("name");
 ```
 
@@ -339,7 +285,7 @@ console.log(data.has("!Exist")) // false
 ### deleteStowrage()
 
 delete everything in the Stowrage  
-and also the stowrage file if `saveToDisk` is used
+and also the SQLite file if `persistent` is used
 
 ```ts
 import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
@@ -350,20 +296,6 @@ data.add("somename1", "string");
 
 data.deleteStowrage();
 // Stowrage is now empty
-```
-
-### stowrageSize()
-
-Get the size of the Stowrage
-
-```ts
-import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
-
-const data = new Stowrage<string>();
-data.add("somename", "string");
-data.add("somename1", "string");
-
-console.log(data.stowrageSize());
 ```
 
 ### totalEntries()
