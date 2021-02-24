@@ -26,7 +26,7 @@ import { DB } from "../deps.ts";
 @property { string } path - Directory for persistent data
 @property { boolean | undefined } isPersistent - Enable or disable persistent storage
 */
-export class Stowrage<DataType extends unknown> {
+export class Stowrage<DataType = unknown> {
   #id = 0;
   #SQLDB: DB | undefined;
   #IDMap = new Map<number, string>();
@@ -73,12 +73,6 @@ export class Stowrage<DataType extends unknown> {
     const entry = this.generateEntry(name, key);
     this.#IDMap.set(entry.id, name);
     this.#DB.set(name, entry);
-    if (this.#SQLDB && this.isPersistent) {
-      this.#SQLDB.query(
-        "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
-        [entry.name, entry.name, JSON.stringify(entry.data)],
-      );
-    }
     return entry;
   }
 
@@ -263,7 +257,7 @@ export class Stowrage<DataType extends unknown> {
       name: name,
       data: key,
     };
-    if (this.#SQLDB && this.isPersistent) {
+    if (this.#SQLDB && this.isPersistent && !override) {
       this.#SQLDB.query(
         "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
         [obj.id, obj.name, JSON.stringify(obj.data)],
