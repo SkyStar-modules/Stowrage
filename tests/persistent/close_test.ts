@@ -5,7 +5,7 @@ Deno.test({
   fn: async() => {
     const data = new Stowrage<string>({
       name: "close",
-      isPersistent: true
+      persistent: true
     });
     await data.init();
     data.close();

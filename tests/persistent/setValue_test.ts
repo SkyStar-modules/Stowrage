@@ -10,7 +10,7 @@ Deno.test({
   fn: async() => {
     const data = new Stowrage<Record<string, number>>({
       name: "setValue",
-      isPersistent: true,
+      persistent: true,
     });
     
     await data.init();

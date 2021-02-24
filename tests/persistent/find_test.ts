@@ -6,7 +6,7 @@ Deno.test({
   fn: async() => {
     const data = new Stowrage<string>({
       name: "find",
-      isPersistent: true,
+      persistent: true,
     });
     
     await data.init();
