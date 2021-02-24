@@ -4,7 +4,7 @@ import { Keydb } from "https://deno.land/x/keydb@1.0.0/sqlite.ts";
 import { DB as SQLite } from "https://deno.land/x/sqlite@v2.3.2/mod.ts";
 import { render } from "https://deno.land/x/eta/mod.ts";
 
-const total = parseInt(Deno.args[0]);
+const total = (Deno.args[0]) ? parseInt(Deno.args[0]) : 10000;
 const step = (Deno.args[1]) ? parseInt(Deno.args[1]) : 1000;
 interface interfaceThing {
   totalTime: number[];
