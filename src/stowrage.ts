@@ -31,6 +31,7 @@ export class Stowrage<DataType = unknown> {
   #SQLDB: DB | undefined;
   #IDMap = new Map<number, string>();
   #DB = new Map<string, DataBase<DataType>>();
+  public debug: boolean | undefined;
   public maxEntries: number | undefined;
   public name: string | undefined;
   public path = "./stowrage/";
@@ -76,7 +77,7 @@ export class Stowrage<DataType = unknown> {
   Add entry to db and returns it aswell
   @param { string } name - Name for the entry
   @param { DataType } value - Value that you want to store (Can be anything)
-  @returns { DataBase<DataType> } Returns entry after it has been added
+  @returns { DataBase<DataType> } - Returns entry after it has been added
   */
   public ensure(name: string, value: DataType): DataBase<DataType> {
     if (this.#DB.has(name)) throw new NameDuplicationError(name);
@@ -144,16 +145,11 @@ export class Stowrage<DataType = unknown> {
         this.#SQLDB.query("DELETE FROM stowrage");
       }
     } else {
-      this.#DB = new Map(
-        [...this.#DB.entries()].filter((entry) =>
-          entry[1].id < start || entry[1].id > range
-        ),
-      );
-      this.#IDMap = new Map(
-        [...this.#IDMap.entries()].filter((entry) =>
-          entry[0] < start || entry[0] > range
-        ),
-      );
+      for (let i = start; i <= range; i++) {
+        const name = this.#IDMap.get(i);
+        this.#DB.delete(name!)
+        this.#IDMap.delete(i);
+      }
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query("DELETE FROM stowrage WHERE id BETWEEN ? AND ?", [
           start,
@@ -244,6 +240,8 @@ export class Stowrage<DataType = unknown> {
   @returns { DataBase<DataType>[] } - Returns Array 
   */
   public fetchByRange(start: number, length: number): DataBase<DataType>[] {
+    if (start < 0) throw RangeError("Starting point cannot be lower than 0");
+    if (length < 1) throw RangeError("Length is smaller than 1");
     const range = start + length;
     if (range >= this.#DB.size) return [...this.#DB.values()];
     return [...this.#DB.values()].filter((data) =>
@@ -299,6 +297,9 @@ export class Stowrage<DataType = unknown> {
     return this.#DB.has(name);
   }
 
+  /**
+  Delete the whole stowrage
+  */
   public deleteStowrage(): void {
     this.#DB.clear();
     this.#IDMap.clear();
