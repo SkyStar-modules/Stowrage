@@ -147,7 +147,7 @@ export class Stowrage<DataType = unknown> {
     } else {
       for (let i = start; i <= range; i++) {
         const name = this.#IDMap.get(i);
-        this.#DB.delete(name!)
+        this.#DB.delete(name!);
         this.#IDMap.delete(i);
       }
       if (this.#SQLDB && this.isPersistent) {
