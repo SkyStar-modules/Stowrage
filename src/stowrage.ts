@@ -63,7 +63,10 @@ export class Stowrage<DataType = unknown> {
           "SELECT name, data FROM stowrage",
         )
       ) {
-        this.add(name, JSON.parse(data));
+        if (this.#DB.has(name)) throw new NameDuplicationError(name);
+        const entry = this.generateEntry(name, data, false, true);
+        this.#IDMap.set(entry.id, name);
+        this.#DB.set(name, entry);
       }
     } else throw new nonPersistentError(this.name ?? "unnamed db", "initiated");
     return;
@@ -328,6 +331,7 @@ export class Stowrage<DataType = unknown> {
     name: string,
     key: DataType,
     override?: boolean,
+    init?: boolean,
   ): DataBase<DataType> {
     let id: number;
     if (override) {
@@ -340,7 +344,7 @@ export class Stowrage<DataType = unknown> {
       name: name,
       data: key,
     };
-    if (!override) {
+    if (!override || init) {
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query(
           "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
