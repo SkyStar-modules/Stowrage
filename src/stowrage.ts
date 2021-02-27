@@ -1,3 +1,4 @@
+// Import error's
 import {
   IDNotFoundError,
   InvalidKeyError,
@@ -7,9 +8,10 @@ import {
   nonPersistentError,
 } from "./error.ts";
 
+// Import fs
 import * as fs from "./filesystem.ts";
 
-// Import types from local typings.ts
+// Import types
 import {
   ChangeValueOptions,
   DataBase,
@@ -21,30 +23,29 @@ import { DB } from "../deps.ts";
 
 /**
 * stowrage class
-@property { number | undefined } maxEntries - max Entries in the Stowrage
+@property { number | null } maxEntries - max Entries in the Stowrage
 @property { string | undefined } name - name of the Stowrage
 @property { string } path - Directory for persistent data
-@property { boolean | undefined } isPersistent - Enable or disable persistent storage
+@property { boolean } isPersistent - Enable or disable persistent storage
 */
 export class Stowrage<DataType = unknown> {
   #id = 0;
   #SQLDB: DB | undefined;
   #IDMap = new Map<number, string>();
   #DB = new Map<string, DataBase<DataType>>();
-  public debug: boolean | undefined;
-  public maxEntries: number | undefined;
+  public maxEntries: number | null;
   public name: string | undefined;
   public path = "./stowrage/";
-  public isPersistent: boolean | undefined = false;
+  public isPersistent: boolean;
 
   /**
   constructor
   @param { StowrageOptions } options - all start options for stowrage
   */
   public constructor(options?: StowrageOptions) {
-    this.maxEntries = options?.maxEntries;
+    this.maxEntries = options?.maxEntries ?? null;
     this.name = options?.name;
-    this.isPersistent = options?.persistent;
+    this.isPersistent = options?.persistent ?? false;
     if (this.name && !fs.pathExistSync(this.path)) Deno.mkdirSync(this.path);
     return;
   }
@@ -185,11 +186,8 @@ export class Stowrage<DataType = unknown> {
   */
   public overrideByID(id: number, key: DataType): void {
     const name: string | undefined = this.#IDMap.get(id);
-    if (name) {
-      this.override(name, key);
-    } else {
-      throw new IDNotFoundError(id);
-    }
+    if (!name) throw new IDNotFoundError(id);
+    this.override(name, key);
     return;
   }
 
@@ -345,7 +343,7 @@ export class Stowrage<DataType = unknown> {
       name: name,
       data: key,
     };
-    if (!override || init) {
+    if (!override || !init) {
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query(
           "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",

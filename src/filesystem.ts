@@ -3,9 +3,7 @@ export function pathExistSync(path: string): boolean {
     Deno.statSync(path);
     return true;
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return false;
-    }
+    if (error instanceof Deno.errors.NotFound) return false;
     throw error;
   }
 }
@@ -15,9 +13,7 @@ export async function pathExist(path: string): Promise<boolean> {
     await Deno.stat(path);
     return true;
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return false;
-    }
+    if (error instanceof Deno.errors.NotFound) return false;
     throw error;
   }
 }
