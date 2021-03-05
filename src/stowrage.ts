@@ -1,3 +1,4 @@
+// Import error's
 import {
   IDNotFoundError,
   InvalidKeyError,
@@ -7,9 +8,10 @@ import {
   nonPersistentError,
 } from "./error.ts";
 
+// Import fs
 import * as fs from "./filesystem.ts";
 
-// Import types from local typings.ts
+// Import types
 import {
   ChangeValueOptions,
   DataBase,
@@ -21,29 +23,29 @@ import { DB } from "../deps.ts";
 
 /**
 * stowrage class
-@property { number | undefined } maxEntries - max Entries in the Stowrage
+@property { number | null } maxEntries - max Entries in the Stowrage
 @property { string | undefined } name - name of the Stowrage
 @property { string } path - Directory for persistent data
-@property { boolean | undefined } isPersistent - Enable or disable persistent storage
+@property { boolean } isPersistent - Enable or disable persistent storage
 */
 export class Stowrage<DataType = unknown> {
   #id = 0;
   #SQLDB: DB | undefined;
   #IDMap = new Map<number, string>();
   #DB = new Map<string, DataBase<DataType>>();
-  public maxEntries: number | undefined;
+  public maxEntries: number | null;
   public name: string | undefined;
   public path = "./stowrage/";
-  public isPersistent: boolean | undefined = false;
+  public isPersistent: boolean;
 
   /**
   constructor
   @param { StowrageOptions } options - all start options for stowrage
   */
   public constructor(options?: StowrageOptions) {
-    this.maxEntries = options?.maxEntries;
+    this.maxEntries = options?.maxEntries ?? null;
     this.name = options?.name;
-    this.isPersistent = options?.persistent;
+    this.isPersistent = options?.persistent ?? false;
     if (this.name && !fs.pathExistSync(this.path)) Deno.mkdirSync(this.path);
     return;
   }
@@ -63,7 +65,10 @@ export class Stowrage<DataType = unknown> {
           "SELECT name, data FROM stowrage",
         )
       ) {
-        this.add(name, JSON.parse(data));
+        if (this.#DB.has(name)) throw new NameDuplicationError(name);
+        const entry = this.generateEntry(name, data, false, true);
+        this.#IDMap.set(entry.id, name);
+        this.#DB.set(name, entry);
       }
     } else throw new nonPersistentError(this.name ?? "unnamed db", "initiated");
     return;
@@ -73,7 +78,7 @@ export class Stowrage<DataType = unknown> {
   Add entry to db and returns it aswell
   @param { string } name - Name for the entry
   @param { DataType } value - Value that you want to store (Can be anything)
-  @returns { DataBase<DataType> } Returns entry after it has been added
+  @returns { DataBase<DataType> } - Returns entry after it has been added
   */
   public ensure(name: string, value: DataType): DataBase<DataType> {
     if (this.#DB.has(name)) throw new NameDuplicationError(name);
@@ -141,16 +146,11 @@ export class Stowrage<DataType = unknown> {
         this.#SQLDB.query("DELETE FROM stowrage");
       }
     } else {
-      this.#DB = new Map(
-        [...this.#DB.entries()].filter((entry) =>
-          entry[1].id < start || entry[1].id > range
-        ),
-      );
-      this.#IDMap = new Map(
-        [...this.#IDMap.entries()].filter((entry) =>
-          entry[0] < start || entry[0] > range
-        ),
-      );
+      for (let i = start; i <= range; i++) {
+        const name = this.#IDMap.get(i);
+        this.#DB.delete(name!);
+        this.#IDMap.delete(i);
+      }
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query("DELETE FROM stowrage WHERE id BETWEEN ? AND ?", [
           start,
@@ -186,11 +186,8 @@ export class Stowrage<DataType = unknown> {
   */
   public overrideByID(id: number, key: DataType): void {
     const name: string | undefined = this.#IDMap.get(id);
-    if (name) {
-      this.override(name, key);
-    } else {
-      throw new IDNotFoundError(id);
-    }
+    if (!name) throw new IDNotFoundError(id);
+    this.override(name, key);
     return;
   }
 
@@ -241,6 +238,8 @@ export class Stowrage<DataType = unknown> {
   @returns { DataBase<DataType>[] } - Returns Array 
   */
   public fetchByRange(start: number, length: number): DataBase<DataType>[] {
+    if (start < 0) throw RangeError("Starting point cannot be lower than 0");
+    if (length < 1) throw RangeError("Length is smaller than 1");
     const range = start + length;
     if (range >= this.#DB.size) return [...this.#DB.values()];
     return [...this.#DB.values()].filter((data) =>
@@ -296,6 +295,9 @@ export class Stowrage<DataType = unknown> {
     return this.#DB.has(name);
   }
 
+  /**
+  Delete the whole stowrage
+  */
   public deleteStowrage(): void {
     this.#DB.clear();
     this.#IDMap.clear();
@@ -328,6 +330,7 @@ export class Stowrage<DataType = unknown> {
     name: string,
     key: DataType,
     override?: boolean,
+    init?: boolean,
   ): DataBase<DataType> {
     let id: number;
     if (override) {
@@ -340,7 +343,7 @@ export class Stowrage<DataType = unknown> {
       name: name,
       data: key,
     };
-    if (!override) {
+    if (!override || !init) {
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query(
           "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
