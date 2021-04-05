@@ -15,7 +15,7 @@ Deno.test({
     const fetch = data.fetchByRange(0, 1);
     assertEquals(
       fetch,
-      data.filter((value: any) => value.name === "something"),
+      data.filter((value) => value.name === "something"),
     );
     data.close();
   },

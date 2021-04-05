@@ -15,7 +15,7 @@ Deno.test({
 
     assertEquals(
       ensure,
-      data.find((value: any) => value.name === "coolEntry"),
+      data.find((value) => value.name === "coolEntry"),
     );
     data.close();
   },

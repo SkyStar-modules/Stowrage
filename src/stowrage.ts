@@ -12,10 +12,10 @@ import {
 import * as fs from "./filesystem.ts";
 
 // Import types
-import {
+import type {
   ChangeValueOptions,
   DataBase,
-  FilterFunc,
+  Predicate,
   StowrageOptions,
 } from "./typings.ts";
 
@@ -193,19 +193,21 @@ export class Stowrage<DataType = unknown> {
 
   /**
   Get an Array of entries that matches your filter
-  @param { FilterFunc<DataType> } func - FilterFunction
+  @param { Predicate<DataType> } func - FilterFunction
   @returns { DataBase<DataType>[] } - Returns Array with filtered entries
   */
-  public filter(func: FilterFunc<DataType>): DataBase<DataType>[] {
+  public filter(func: Predicate<DataBase<DataType>>): DataBase<DataType>[] {
     return [...this.#DB.values()].filter(func);
   }
 
   /**
   Get the first entry that matches your filter
-  @param { FilterFunc<DataType> } func - FilterFunction
+  @param { Predicate<DataType> } func - FilterFunction
   @returns { DataBase<DataType> | undefined } - Returns first match found or undefined if no match is found
   */
-  public find(func: FilterFunc<DataType>): DataBase<DataType> | undefined {
+  public find(
+    func: Predicate<DataBase<DataType>>,
+  ): DataBase<DataType> | undefined {
     return [...this.#DB.values()].find(func);
   }
 
