@@ -3,14 +3,14 @@ import { assertEquals } from "../devdeps.ts";
 
 Deno.test({
   name: "ensure Save",
-  fn: async() => {
+  fn: async () => {
     const data = new Stowrage<string>({
       name: "ensure",
       persistent: true,
     });
-    
+
     await data.init();
-    
+
     const before = data.totalEntries();
     const ensure = data.ensure("something", "string");
     assertEquals(before + 1, data.totalEntries());

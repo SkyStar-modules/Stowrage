@@ -4,8 +4,8 @@ This document is for people who want to contribute to this repository!
 
 ## Code Style
 
-We use `deno lint` for linting  
-We use deno's LSP as base for code style.  
+We use `deno lint` for linting\
+We use deno's LSP as base for code style.
 
 ### Formatting Rules
 
@@ -21,9 +21,11 @@ We use deno's LSP as base for code style.
 
 ## Submitting PR
 
-When submitting PR, please make the title as simple as possible.  
-Ex: `[Feature improvement]: Cache can now be loaded much faster`  
-Also, please make it understandable for someone whose English is not a primary language.  
-The PR need's atleast a test if you added a method & needs to pass `deno fmt`, `deno lint` and all tests to be able to get merged
+When submitting PR, please make the title as simple as possible.\
+Ex: `[Feature improvement]: Cache can now be loaded much faster`\
+Also, please make it understandable for someone whose English is not a primary
+language.\
+The PR need's atleast a test if you added a method & needs to pass `deno fmt`,
+`deno lint` and all tests to be able to get merged
 
 Thanks!
