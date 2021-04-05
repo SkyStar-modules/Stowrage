@@ -1,4 +1,4 @@
-name: github lint
+name: Lint
 
 on: 
   push:
