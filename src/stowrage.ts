@@ -1,3 +1,4 @@
+// Import errors
 import {
   IDNotFoundError,
   InvalidKeyError,
@@ -7,43 +8,47 @@ import {
   nonPersistentError,
 } from "./error.ts";
 
+// Import fs
 import * as fs from "./filesystem.ts";
 
-// Import types from local typings.ts
-import {
+// Import SQLite
+import { DB } from "../deps.ts";
+
+// Import types
+import type {
   ChangeValueOptions,
   DataBase,
-  FilterFunc,
+  Predicate,
   StowrageOptions,
 } from "./typings.ts";
 
-import { DB } from "../deps.ts";
+import type { PreparedQuery } from "../deps.ts";
 
 /**
-* stowrage class
-@property { number | undefined } maxEntries - max Entries in the Stowrage
+* Stowrage class
+@property { number | null } maxEntries - max Entries in the Stowrage
 @property { string | undefined } name - name of the Stowrage
 @property { string } path - Directory for persistent data
-@property { boolean | undefined } isPersistent - Enable or disable persistent storage
+@property { boolean } isPersistent - Enable or disable persistent storage
 */
 export class Stowrage<DataType = unknown> {
   #id = 0;
   #SQLDB: DB | undefined;
   #IDMap = new Map<number, string>();
   #DB = new Map<string, DataBase<DataType>>();
-  public maxEntries: number | undefined;
+  #query: PreparedQuery | undefined;
+  public maxEntries: number | null;
   public name: string | undefined;
   public path = "./stowrage/";
-  public isPersistent: boolean | undefined = false;
+  public isPersistent: boolean;
 
   /**
-  constructor
   @param { StowrageOptions } options - all start options for stowrage
   */
   public constructor(options?: StowrageOptions) {
-    this.maxEntries = options?.maxEntries;
+    this.maxEntries = options?.maxEntries ?? null;
     this.name = options?.name;
-    this.isPersistent = options?.persistent;
+    this.isPersistent = options?.persistent ?? false;
     if (this.name && !fs.pathExistSync(this.path)) Deno.mkdirSync(this.path);
     return;
   }
@@ -57,6 +62,9 @@ export class Stowrage<DataType = unknown> {
       this.#SQLDB = new DB(this.path + this.name + ".db");
       this.#SQLDB.query(
         "CREATE TABLE IF NOT EXISTS stowrage (id INTEGER, name TEXT, data TEXT )",
+      );
+      this.#query = this.#SQLDB.prepareQuery(
+        "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
       );
       for await (
         const [name, data] of this.#SQLDB.query(
@@ -76,7 +84,7 @@ export class Stowrage<DataType = unknown> {
   Add entry to db and returns it aswell
   @param { string } name - Name for the entry
   @param { DataType } value - Value that you want to store (Can be anything)
-  @returns { DataBase<DataType> } Returns entry after it has been added
+  @returns { DataBase<DataType> } - Returns entry after it has been added
   */
   public ensure(name: string, value: DataType): DataBase<DataType> {
     if (this.#DB.has(name)) throw new NameDuplicationError(name);
@@ -144,16 +152,11 @@ export class Stowrage<DataType = unknown> {
         this.#SQLDB.query("DELETE FROM stowrage");
       }
     } else {
-      this.#DB = new Map(
-        [...this.#DB.entries()].filter((entry) =>
-          entry[1].id < start || entry[1].id > range
-        ),
-      );
-      this.#IDMap = new Map(
-        [...this.#IDMap.entries()].filter((entry) =>
-          entry[0] < start || entry[0] > range
-        ),
-      );
+      for (let i = start; i <= range; i++) {
+        const name = this.#IDMap.get(i);
+        this.#DB.delete(name!);
+        this.#IDMap.delete(i);
+      }
       if (this.#SQLDB && this.isPersistent) {
         this.#SQLDB.query("DELETE FROM stowrage WHERE id BETWEEN ? AND ?", [
           start,
@@ -189,29 +192,28 @@ export class Stowrage<DataType = unknown> {
   */
   public overrideByID(id: number, key: DataType): void {
     const name: string | undefined = this.#IDMap.get(id);
-    if (name) {
-      this.override(name, key);
-    } else {
-      throw new IDNotFoundError(id);
-    }
+    if (!name) throw new IDNotFoundError(id);
+    this.override(name, key);
     return;
   }
 
   /**
   Get an Array of entries that matches your filter
-  @param { FilterFunc<DataType> } func - FilterFunction
+  @param { Predicate<DataType> } func - FilterFunction
   @returns { DataBase<DataType>[] } - Returns Array with filtered entries
   */
-  public filter(func: FilterFunc<DataType>): DataBase<DataType>[] {
+  public filter(func: Predicate<DataBase<DataType>>): DataBase<DataType>[] {
     return [...this.#DB.values()].filter(func);
   }
 
   /**
   Get the first entry that matches your filter
-  @param { FilterFunc<DataType> } func - FilterFunction
+  @param { Predicate<DataType> } func - FilterFunction
   @returns { DataBase<DataType> | undefined } - Returns first match found or undefined if no match is found
   */
-  public find(func: FilterFunc<DataType>): DataBase<DataType> | undefined {
+  public find(
+    func: Predicate<DataBase<DataType>>,
+  ): DataBase<DataType> | undefined {
     return [...this.#DB.values()].find(func);
   }
 
@@ -244,6 +246,8 @@ export class Stowrage<DataType = unknown> {
   @returns { DataBase<DataType>[] } - Returns Array 
   */
   public fetchByRange(start: number, length: number): DataBase<DataType>[] {
+    if (start < 0) throw RangeError("Starting point cannot be lower than 0");
+    if (length < 1) throw RangeError("Length is smaller than 1");
     const range = start + length;
     if (range >= this.#DB.size) return [...this.#DB.values()];
     return [...this.#DB.values()].filter((data) =>
@@ -299,6 +303,9 @@ export class Stowrage<DataType = unknown> {
     return this.#DB.has(name);
   }
 
+  /**
+  Delete the whole stowrage
+  */
   public deleteStowrage(): void {
     this.#DB.clear();
     this.#IDMap.clear();
@@ -313,9 +320,10 @@ export class Stowrage<DataType = unknown> {
   Close SQLite database if it exists
   */
   public close(): void {
-    if (!this.#SQLDB) {
+    if (!this.#SQLDB || !this.#query) {
       throw new nonPersistentError(this.name ?? "unnamed db", "closed");
     }
+    this.#query.finalize();
     this.#SQLDB.close();
     return;
   }
@@ -344,12 +352,9 @@ export class Stowrage<DataType = unknown> {
       name: name,
       data: key,
     };
-    if (!override || init) {
-      if (this.#SQLDB && this.isPersistent) {
-        this.#SQLDB.query(
-          "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
-          [obj.id, obj.name, JSON.stringify(obj.data)],
-        );
+    if (!override || !init) {
+      if (this.#SQLDB && this.isPersistent && this.#query) {
+        this.#query([obj.id, obj.name, JSON.stringify(obj.data)]);
       }
       if (this.maxEntries && this.#DB.size > this.maxEntries) {
         const name = this.#IDMap.get(this.#id - this.maxEntries);

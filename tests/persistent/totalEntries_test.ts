@@ -3,12 +3,12 @@ import { assertEquals, assertNotEquals } from "../devdeps.ts";
 
 Deno.test({
   name: "totalEntries Save",
-  fn: async() => {
+  fn: async () => {
     const data = new Stowrage<string>({
       name: "totalEntries",
       persistent: true,
     });
-    
+
     await data.init();
 
     const empty = data.totalEntries();

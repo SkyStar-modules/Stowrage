@@ -1,4 +1,4 @@
-name: github fmt
+name: Formatting
 
 on: 
   push:
@@ -24,4 +24,4 @@ jobs:
           deno-version: v1.x
       
       - name: Run Formatting
-        run: deno fmt src
+        run: deno fmt

@@ -15,7 +15,7 @@ export interface ChangeValueOptions<T> {
   key?: string;
 }
 
-export interface FilterFunc<T> {
-  (value: DataBase<T>, index: number, array: DataBase<T>[]): unknown;
+export interface Predicate<T> {
+  (value: T, index: number, array: T[]): unknown;
   thisArg?: this;
 }

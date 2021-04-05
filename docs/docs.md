@@ -14,7 +14,7 @@ const data = new Stowrage();
 
 ### persistent Stowrage
 
-to get persistent stowrage, you just need to set `isPersistent` to true  
+to get persistent stowrage, you just need to set `isPersistent` to true\
 and initiate the database
 
 ```ts
@@ -22,7 +22,7 @@ import { Stowrage } from "https://deno.land/x/stowrage/mod.ts";
 
 const data = new Stowrage({
   name: "persistent",
-  persistent: true
+  persistent: true,
 });
 
 await data.init();
@@ -30,7 +30,7 @@ await data.init();
 
 ### typesafe Stowrage
 
-A typesafe Stowrage only allow's user listed types to be used  
+A typesafe Stowrage only allow's user listed types to be used\
 The example shown below only allow's string's to be used
 
 ```ts
@@ -254,7 +254,7 @@ const data = new Stowrage<string>();
 data.add("somename", "string");
 data.add("somename1", "string");
 
-data.filter(entry => entry.name.includes("somename"));
+data.filter((entry) => entry.name.includes("somename"));
 ```
 
 ### find(filter: FilterFunc)
@@ -266,7 +266,7 @@ const data = new Stowrage<string>();
 data.add("somename", "string");
 data.add("somename1", "string");
 
-data.find(entry => entry.name.includes("somename"));
+data.find((entry) => entry.name.includes("somename"));
 ```
 
 ### has(searchName: string)
@@ -279,12 +279,14 @@ data.add("somename", "string");
 data.add("somename1", "string");
 
 console.log(data.has("somename")) // true
+;
 console.log(data.has("!Exist")) // false
+;
 ```
 
 ### deleteStowrage()
 
-delete everything in the Stowrage  
+delete everything in the Stowrage\
 and also the SQLite file if `persistent` is used
 
 ```ts
