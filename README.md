@@ -43,11 +43,8 @@ like a beta for new features.\
 The [dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev)
 will be an alpha/dev built which get's alot of changes which might break and be
 buggy.\
-The
-[bench-branch github branch](https://github.com/SkyStar-modules/Stowrage/tree/bench-branch)
-is for benchmarking the
-[dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev) and
-has some benchmark results in it
+The [dev github branch](https://github.com/SkyStar-modules/Stowrage/tree/dev)
+and has some benchmark results in it
 
 ## Authors & Acknowledgments
 
