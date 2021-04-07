@@ -1,14 +1,6 @@
-name: Lint
+name: Linting
 
-on: 
-  push:
-    branches:
-      - main
-      - dev
-  pull_request:
-    branches:
-      - main
-      - dev
+on: [push, pull_request]
 
 jobs:
   lint:
@@ -24,4 +16,4 @@ jobs:
           deno-version: v1.x
       
       - name: Run lint
-        run: deno lint --unstable src
+        run: deno lint --unstable

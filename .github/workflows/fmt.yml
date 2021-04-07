@@ -1,14 +1,6 @@
 name: Formatting
 
-on: 
-  push:
-    branches:
-      - main
-      - dev
-  pull_request:
-    branches:
-      - main
-      - dev
+on: [push, pull_request]
 
 jobs:
   fmt:
