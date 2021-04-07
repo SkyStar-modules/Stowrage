@@ -8,9 +8,6 @@ import {
   nonPersistentError,
 } from "./error.ts";
 
-// Import fs
-import * as fs from "./filesystem.ts";
-
 // Import SQLite
 import { DB } from "../deps.ts";
 
@@ -49,7 +46,13 @@ export class Stowrage<DataType = unknown> {
     this.maxEntries = options?.maxEntries ?? null;
     this.name = options?.name;
     this.isPersistent = options?.persistent ?? false;
-    if (this.name && !fs.pathExistSync(this.path)) Deno.mkdirSync(this.path);
+    if (this.name) {
+      try {
+        Deno.mkdirSync(this.path);
+      } catch (e) {
+        if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
+      }
+    }
     return;
   }
 
