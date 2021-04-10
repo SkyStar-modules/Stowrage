@@ -17,20 +17,12 @@
                 labels: [0,<%= it.entries %>],
                 datasets: [{ 
                     data: [0,<%= it.stowrage.totalTime %>],
-                    label: "v0.4 stowrage",
+                    label: "v0.5 stowrage",
                     borderColor: "#00ff00"
                 }, { 
                     data: [0,<%= it.keyDB.totalTime %>],
                     label: "keyDB",
                     borderColor: "#ff0000"
-                }, {
-                    data: [0, <%= it.SQLite.totalTime %>],
-                    label: "SQLite",
-                    borderColor: "#0000ff"
-                }, {
-                    data: [0, <%= it.oldStowrage.totalTime %>],
-                    label: "v0.3.2 stowrage",
-                    borderColor: "#ffff00"
                 }
             ]},
             options: {
@@ -52,20 +44,12 @@
                 labels: [0,<%= it.entries %>],
                 datasets: [{ 
                     data: [0,<%= it.stowrage.avg %>],
-                    label: "v0.4 stowrage",
+                    label: "v0.5 stowrage",
                     borderColor: "#00ff00"
                 }, { 
                     data: [0,<%= it.keyDB.avg %>],
                     label: "keyDB",
                     borderColor: "#ff0000"
-                }, {
-                    data: [0, <%= it.SQLite.avg %>],
-                    label: "SQLite",
-                    borderColor: "#0000ff"
-                }, {
-                    data: [0, <%= it.oldStowrage.avg %>],
-                    label: "v0.3.2 stowrage",
-                    borderColor: "#ffff00"
                 }
             ]},
             options: {
