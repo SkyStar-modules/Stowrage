@@ -1,4 +1,4 @@
-// Import error's
+// Import errors
 import {
   IDNotFoundError,
   InvalidKeyError,
@@ -8,21 +8,21 @@ import {
   nonPersistentError,
 } from "./error.ts";
 
-// Import fs
-import * as fs from "./filesystem.ts";
+// Import SQLite
+import { DB } from "../deps.ts";
 
 // Import types
-import {
+import type {
   ChangeValueOptions,
   DataBase,
-  FilterFunc,
+  Predicate,
   StowrageOptions,
 } from "./typings.ts";
 
-import { DB } from "../deps.ts";
+import type { PreparedQuery } from "../deps.ts";
 
 /**
-* stowrage class
+* Stowrage class
 @property { number | null } maxEntries - max Entries in the Stowrage
 @property { string | undefined } name - name of the Stowrage
 @property { string } path - Directory for persistent data
@@ -33,20 +33,26 @@ export class Stowrage<DataType = unknown> {
   #SQLDB: DB | undefined;
   #IDMap = new Map<number, string>();
   #DB = new Map<string, DataBase<DataType>>();
+  #query: PreparedQuery | undefined;
   public maxEntries: number | null;
   public name: string | undefined;
   public path = "./stowrage/";
   public isPersistent: boolean;
 
   /**
-  constructor
   @param { StowrageOptions } options - all start options for stowrage
   */
   public constructor(options?: StowrageOptions) {
     this.maxEntries = options?.maxEntries ?? null;
     this.name = options?.name;
     this.isPersistent = options?.persistent ?? false;
-    if (this.name && !fs.pathExistSync(this.path)) Deno.mkdirSync(this.path);
+    if (this.name) {
+      try {
+        Deno.mkdirSync(this.path);
+      } catch (e) {
+        if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
+      }
+    }
     return;
   }
 
@@ -59,6 +65,9 @@ export class Stowrage<DataType = unknown> {
       this.#SQLDB = new DB(this.path + this.name + ".db");
       this.#SQLDB.query(
         "CREATE TABLE IF NOT EXISTS stowrage (id INTEGER, name TEXT, data TEXT )",
+      );
+      this.#query = this.#SQLDB.prepareQuery(
+        "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
       );
       for await (
         const [name, data] of this.#SQLDB.query(
@@ -193,19 +202,21 @@ export class Stowrage<DataType = unknown> {
 
   /**
   Get an Array of entries that matches your filter
-  @param { FilterFunc<DataType> } func - FilterFunction
+  @param { Predicate<DataType> } func - FilterFunction
   @returns { DataBase<DataType>[] } - Returns Array with filtered entries
   */
-  public filter(func: FilterFunc<DataType>): DataBase<DataType>[] {
+  public filter(func: Predicate<DataBase<DataType>>): DataBase<DataType>[] {
     return [...this.#DB.values()].filter(func);
   }
 
   /**
   Get the first entry that matches your filter
-  @param { FilterFunc<DataType> } func - FilterFunction
+  @param { Predicate<DataType> } func - FilterFunction
   @returns { DataBase<DataType> | undefined } - Returns first match found or undefined if no match is found
   */
-  public find(func: FilterFunc<DataType>): DataBase<DataType> | undefined {
+  public find(
+    func: Predicate<DataBase<DataType>>,
+  ): DataBase<DataType> | undefined {
     return [...this.#DB.values()].find(func);
   }
 
@@ -312,9 +323,10 @@ export class Stowrage<DataType = unknown> {
   Close SQLite database if it exists
   */
   public close(): void {
-    if (!this.#SQLDB) {
+    if (!this.#SQLDB || !this.#query) {
       throw new nonPersistentError(this.name ?? "unnamed db", "closed");
     }
+    this.#query.finalize();
     this.#SQLDB.close();
     return;
   }
@@ -344,11 +356,8 @@ export class Stowrage<DataType = unknown> {
       data: key,
     };
     if (!override || !init) {
-      if (this.#SQLDB && this.isPersistent) {
-        this.#SQLDB.query(
-          "INSERT INTO stowrage (id, name, data) VALUES(?, ?, ?)",
-          [obj.id, obj.name, JSON.stringify(obj.data)],
-        );
+      if (this.#SQLDB && this.isPersistent && this.#query) {
+        this.#query([obj.id, obj.name, JSON.stringify(obj.data)]);
       }
       if (this.maxEntries && this.#DB.size > this.maxEntries) {
         const name = this.#IDMap.get(this.#id - this.maxEntries);

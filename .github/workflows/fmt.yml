@@ -1,14 +1,10 @@
-name: github fmt
+name: Formatting
 
-on: 
+on:  
   push:
     branches:
       - main
-      - dev
   pull_request:
-    branches:
-      - main
-      - dev
 
 jobs:
   fmt:
@@ -24,4 +20,4 @@ jobs:
           deno-version: v1.x
       
       - name: Run Formatting
-        run: deno fmt src
+        run: deno fmt

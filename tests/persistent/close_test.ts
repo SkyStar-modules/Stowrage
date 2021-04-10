@@ -2,10 +2,10 @@ import { Stowrage } from "../../mod.ts";
 
 Deno.test({
   name: "close",
-  fn: async() => {
+  fn: async () => {
     const data = new Stowrage<string>({
       name: "close",
-      persistent: true
+      persistent: true,
     });
     await data.init();
     data.close();

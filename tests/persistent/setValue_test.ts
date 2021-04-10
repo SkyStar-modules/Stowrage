@@ -7,17 +7,17 @@ const startOBJ = {
 
 Deno.test({
   name: "setValue Save",
-  fn: async() => {
+  fn: async () => {
     const data = new Stowrage<Record<string, number>>({
       name: "setValue",
       persistent: true,
     });
-    
+
     await data.init();
-    
+
     data.add("something", startOBJ);
     data.add("something2", startOBJ);
-    
+
     let before = data.fetch("something").data.ree;
     data.setValue("something", { key: "ree", value: -7 });
     assertNotEquals(before, data.fetch("something").data.ree);

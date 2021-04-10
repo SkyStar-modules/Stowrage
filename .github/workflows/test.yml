@@ -1,22 +1,19 @@
-name: github test
+name: Testing
 
-on: 
+on:  
   push:
     branches:
       - main
-      - dev
   pull_request:
-    branches:
-      - main
-      - dev
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        deno: ['v1.6.0','v1.x', 'nightly']
+        os: [ubuntu-latest, macos-latest, windows-2019]
+        deno: ['v1.7.0','v1.x', 'nightly']
 
     steps:
       - name: Setup repo
@@ -28,4 +25,4 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno test -A --unstable tests
+        run: deno test -A tests
