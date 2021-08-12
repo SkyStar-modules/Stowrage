@@ -285,7 +285,7 @@ export class Stowrage<DataType = unknown> {
       if (typeof options.key === "undefined") throw new KeyUndefinedError();
       if (
         typeof (entry!.data as Record<string, DataType>)[options.key] ===
-          "undefined"
+        "undefined"
       ) {
         throw new InvalidKeyError(options.key, this.name ?? "unnamed db");
       }
@@ -344,14 +344,8 @@ export class Stowrage<DataType = unknown> {
     override?: boolean,
     init?: boolean,
   ): DataBase<DataType> {
-    let id: number;
-    if (override) {
-      id = this.#DB.get(name)!.id;
-    } else {
-      id = this.#id++;
-    }
     const obj: DataBase<DataType> = {
-      id: id,
+      id: override ? this.#DB.get(name)!.id : this.#id++,
       name: name,
       data: key,
     };
