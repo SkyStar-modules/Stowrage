@@ -1,7 +1,7 @@
 export interface DataBase<T> {
   id: number;
   name: string;
-  data: T | Record<string, unknown>;
+  data: T | Record<string, T>;
 }
 
 export interface StowrageOptions {
